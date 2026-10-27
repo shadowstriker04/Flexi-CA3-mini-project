@@ -1,38 +1,35 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.repeatWhen = void 0;
-var innerFrom_1 = require("../observable/innerFrom");
-var Subject_1 = require("../Subject");
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function repeatWhen(notifier) {
-    return lift_1.operate(function (source, subscriber) {
-        var innerSub;
-        var syncResub = false;
-        var completions$;
-        var isNotifierComplete = false;
-        var isMainComplete = false;
-        var checkComplete = function () { return isMainComplete && isNotifierComplete && (subscriber.complete(), true); };
-        var getCompletionSubject = function () {
+import { innerFrom } from '../observable/innerFrom';
+import { Subject } from '../Subject';
+import { operate } from '../util/lift';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function repeatWhen(notifier) {
+    return operate((source, subscriber) => {
+        let innerSub;
+        let syncResub = false;
+        let completions$;
+        let isNotifierComplete = false;
+        let isMainComplete = false;
+        const checkComplete = () => isMainComplete && isNotifierComplete && (subscriber.complete(), true);
+        const getCompletionSubject = () => {
             if (!completions$) {
-                completions$ = new Subject_1.Subject();
-                innerFrom_1.innerFrom(notifier(completions$)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
+                completions$ = new Subject();
+                innerFrom(notifier(completions$)).subscribe(createOperatorSubscriber(subscriber, () => {
                     if (innerSub) {
                         subscribeForRepeatWhen();
                     }
                     else {
                         syncResub = true;
                     }
-                }, function () {
+                }, () => {
                     isNotifierComplete = true;
                     checkComplete();
                 }));
             }
             return completions$;
         };
-        var subscribeForRepeatWhen = function () {
+        const subscribeForRepeatWhen = () => {
             isMainComplete = false;
-            innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, function () {
+            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, () => {
                 isMainComplete = true;
                 !checkComplete() && getCompletionSubject().next();
             }));
@@ -46,5 +43,4 @@ function repeatWhen(notifier) {
         subscribeForRepeatWhen();
     });
 }
-exports.repeatWhen = repeatWhen;
 //# sourceMappingURL=repeatWhen.js.map

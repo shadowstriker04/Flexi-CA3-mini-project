@@ -1,32 +1,28 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.skipLast = void 0;
-var identity_1 = require("../util/identity");
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function skipLast(skipCount) {
+import { identity } from '../util/identity';
+import { operate } from '../util/lift';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function skipLast(skipCount) {
     return skipCount <= 0
         ?
-            identity_1.identity
-        : lift_1.operate(function (source, subscriber) {
-            var ring = new Array(skipCount);
-            var seen = 0;
-            source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
-                var valueIndex = seen++;
+            identity
+        : operate((source, subscriber) => {
+            let ring = new Array(skipCount);
+            let seen = 0;
+            source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+                const valueIndex = seen++;
                 if (valueIndex < skipCount) {
                     ring[valueIndex] = value;
                 }
                 else {
-                    var index = valueIndex % skipCount;
-                    var oldValue = ring[index];
+                    const index = valueIndex % skipCount;
+                    const oldValue = ring[index];
                     ring[index] = value;
                     subscriber.next(oldValue);
                 }
             }));
-            return function () {
+            return () => {
                 ring = null;
             };
         });
 }
-exports.skipLast = skipLast;
 //# sourceMappingURL=skipLast.js.map

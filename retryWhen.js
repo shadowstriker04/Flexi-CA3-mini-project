@@ -1,22 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.retryWhen = void 0;
-var innerFrom_1 = require("../observable/innerFrom");
-var Subject_1 = require("../Subject");
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function retryWhen(notifier) {
-    return lift_1.operate(function (source, subscriber) {
-        var innerSub;
-        var syncResub = false;
-        var errors$;
-        var subscribeForRetryWhen = function () {
-            innerSub = source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, undefined, undefined, function (err) {
+import { innerFrom } from '../observable/innerFrom';
+import { Subject } from '../Subject';
+import { operate } from '../util/lift';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function retryWhen(notifier) {
+    return operate((source, subscriber) => {
+        let innerSub;
+        let syncResub = false;
+        let errors$;
+        const subscribeForRetryWhen = () => {
+            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, undefined, (err) => {
                 if (!errors$) {
-                    errors$ = new Subject_1.Subject();
-                    innerFrom_1.innerFrom(notifier(errors$)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
-                        return innerSub ? subscribeForRetryWhen() : (syncResub = true);
-                    }));
+                    errors$ = new Subject();
+                    innerFrom(notifier(errors$)).subscribe(createOperatorSubscriber(subscriber, () => innerSub ? subscribeForRetryWhen() : (syncResub = true)));
                 }
                 if (errors$) {
                     errors$.next(err);
@@ -32,5 +27,4 @@ function retryWhen(notifier) {
         subscribeForRetryWhen();
     });
 }
-exports.retryWhen = retryWhen;
 //# sourceMappingURL=retryWhen.js.map

@@ -1,27 +1,23 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sample = void 0;
-var innerFrom_1 = require("../observable/innerFrom");
-var lift_1 = require("../util/lift");
-var noop_1 = require("../util/noop");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function sample(notifier) {
-    return lift_1.operate(function (source, subscriber) {
-        var hasValue = false;
-        var lastValue = null;
-        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
+import { innerFrom } from '../observable/innerFrom';
+import { operate } from '../util/lift';
+import { noop } from '../util/noop';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function sample(notifier) {
+    return operate((source, subscriber) => {
+        let hasValue = false;
+        let lastValue = null;
+        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
             hasValue = true;
             lastValue = value;
         }));
-        innerFrom_1.innerFrom(notifier).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function () {
+        innerFrom(notifier).subscribe(createOperatorSubscriber(subscriber, () => {
             if (hasValue) {
                 hasValue = false;
-                var value = lastValue;
+                const value = lastValue;
                 lastValue = null;
                 subscriber.next(value);
             }
-        }, noop_1.noop));
+        }, noop));
     });
 }
-exports.sample = sample;
 //# sourceMappingURL=sample.js.map

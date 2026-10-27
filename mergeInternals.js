@@ -1,25 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mergeInternals = void 0;
-var innerFrom_1 = require("../observable/innerFrom");
-var executeSchedule_1 = require("../util/executeSchedule");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalFinalizer) {
-    var buffer = [];
-    var active = 0;
-    var index = 0;
-    var isComplete = false;
-    var checkComplete = function () {
+import { innerFrom } from '../observable/innerFrom';
+import { executeSchedule } from '../util/executeSchedule';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalFinalizer) {
+    const buffer = [];
+    let active = 0;
+    let index = 0;
+    let isComplete = false;
+    const checkComplete = () => {
         if (isComplete && !buffer.length && !active) {
             subscriber.complete();
         }
     };
-    var outerNext = function (value) { return (active < concurrent ? doInnerSub(value) : buffer.push(value)); };
-    var doInnerSub = function (value) {
+    const outerNext = (value) => (active < concurrent ? doInnerSub(value) : buffer.push(value));
+    const doInnerSub = (value) => {
         expand && subscriber.next(value);
         active++;
-        var innerComplete = false;
-        innerFrom_1.innerFrom(project(value, index++)).subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (innerValue) {
+        let innerComplete = false;
+        innerFrom(project(value, index++)).subscribe(createOperatorSubscriber(subscriber, (innerValue) => {
             onBeforeNext === null || onBeforeNext === void 0 ? void 0 : onBeforeNext(innerValue);
             if (expand) {
                 outerNext(innerValue);
@@ -27,23 +24,20 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
             else {
                 subscriber.next(innerValue);
             }
-        }, function () {
+        }, () => {
             innerComplete = true;
-        }, undefined, function () {
+        }, undefined, () => {
             if (innerComplete) {
                 try {
                     active--;
-                    var _loop_1 = function () {
-                        var bufferedValue = buffer.shift();
+                    while (buffer.length && active < concurrent) {
+                        const bufferedValue = buffer.shift();
                         if (innerSubScheduler) {
-                            executeSchedule_1.executeSchedule(subscriber, innerSubScheduler, function () { return doInnerSub(bufferedValue); });
+                            executeSchedule(subscriber, innerSubScheduler, () => doInnerSub(bufferedValue));
                         }
                         else {
                             doInnerSub(bufferedValue);
                         }
-                    };
-                    while (buffer.length && active < concurrent) {
-                        _loop_1();
                     }
                     checkComplete();
                 }
@@ -53,13 +47,12 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
             }
         }));
     };
-    source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, outerNext, function () {
+    source.subscribe(createOperatorSubscriber(subscriber, outerNext, () => {
         isComplete = true;
         checkComplete();
     }));
-    return function () {
+    return () => {
         additionalFinalizer === null || additionalFinalizer === void 0 ? void 0 : additionalFinalizer();
     };
 }
-exports.mergeInternals = mergeInternals;
 //# sourceMappingURL=mergeInternals.js.map

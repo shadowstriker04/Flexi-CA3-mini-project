@@ -1,40 +1,35 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sequenceEqual = void 0;
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-var innerFrom_1 = require("../observable/innerFrom");
-function sequenceEqual(compareTo, comparator) {
-    if (comparator === void 0) { comparator = function (a, b) { return a === b; }; }
-    return lift_1.operate(function (source, subscriber) {
-        var aState = createState();
-        var bState = createState();
-        var emit = function (isEqual) {
+import { operate } from '../util/lift';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+import { innerFrom } from '../observable/innerFrom';
+export function sequenceEqual(compareTo, comparator = (a, b) => a === b) {
+    return operate((source, subscriber) => {
+        const aState = createState();
+        const bState = createState();
+        const emit = (isEqual) => {
             subscriber.next(isEqual);
             subscriber.complete();
         };
-        var createSubscriber = function (selfState, otherState) {
-            var sequenceEqualSubscriber = OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (a) {
-                var buffer = otherState.buffer, complete = otherState.complete;
+        const createSubscriber = (selfState, otherState) => {
+            const sequenceEqualSubscriber = createOperatorSubscriber(subscriber, (a) => {
+                const { buffer, complete } = otherState;
                 if (buffer.length === 0) {
                     complete ? emit(false) : selfState.buffer.push(a);
                 }
                 else {
                     !comparator(a, buffer.shift()) && emit(false);
                 }
-            }, function () {
+            }, () => {
                 selfState.complete = true;
-                var complete = otherState.complete, buffer = otherState.buffer;
+                const { complete, buffer } = otherState;
                 complete && emit(buffer.length === 0);
                 sequenceEqualSubscriber === null || sequenceEqualSubscriber === void 0 ? void 0 : sequenceEqualSubscriber.unsubscribe();
             });
             return sequenceEqualSubscriber;
         };
         source.subscribe(createSubscriber(aState, bState));
-        innerFrom_1.innerFrom(compareTo).subscribe(createSubscriber(bState, aState));
+        innerFrom(compareTo).subscribe(createSubscriber(bState, aState));
     });
 }
-exports.sequenceEqual = sequenceEqual;
 function createState() {
     return {
         buffer: [],

@@ -1,62 +1,37 @@
-"use strict";
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.share = void 0;
-var innerFrom_1 = require("../observable/innerFrom");
-var Subject_1 = require("../Subject");
-var Subscriber_1 = require("../Subscriber");
-var lift_1 = require("../util/lift");
-function share(options) {
-    if (options === void 0) { options = {}; }
-    var _a = options.connector, connector = _a === void 0 ? function () { return new Subject_1.Subject(); } : _a, _b = options.resetOnError, resetOnError = _b === void 0 ? true : _b, _c = options.resetOnComplete, resetOnComplete = _c === void 0 ? true : _c, _d = options.resetOnRefCountZero, resetOnRefCountZero = _d === void 0 ? true : _d;
-    return function (wrapperSource) {
-        var connection;
-        var resetConnection;
-        var subject;
-        var refCount = 0;
-        var hasCompleted = false;
-        var hasErrored = false;
-        var cancelReset = function () {
+import { innerFrom } from '../observable/innerFrom';
+import { Subject } from '../Subject';
+import { SafeSubscriber } from '../Subscriber';
+import { operate } from '../util/lift';
+export function share(options = {}) {
+    const { connector = () => new Subject(), resetOnError = true, resetOnComplete = true, resetOnRefCountZero = true } = options;
+    return (wrapperSource) => {
+        let connection;
+        let resetConnection;
+        let subject;
+        let refCount = 0;
+        let hasCompleted = false;
+        let hasErrored = false;
+        const cancelReset = () => {
             resetConnection === null || resetConnection === void 0 ? void 0 : resetConnection.unsubscribe();
             resetConnection = undefined;
         };
-        var reset = function () {
+        const reset = () => {
             cancelReset();
             connection = subject = undefined;
             hasCompleted = hasErrored = false;
         };
-        var resetAndUnsubscribe = function () {
-            var conn = connection;
+        const resetAndUnsubscribe = () => {
+            const conn = connection;
             reset();
             conn === null || conn === void 0 ? void 0 : conn.unsubscribe();
         };
-        return lift_1.operate(function (source, subscriber) {
+        return operate((source, subscriber) => {
             refCount++;
             if (!hasErrored && !hasCompleted) {
                 cancelReset();
             }
-            var dest = (subject = subject !== null && subject !== void 0 ? subject : connector());
-            subscriber.add(function () {
+            const dest = (subject = subject !== null && subject !== void 0 ? subject : connector());
+            subscriber.add(() => {
                 refCount--;
                 if (refCount === 0 && !hasErrored && !hasCompleted) {
                     resetConnection = handleReset(resetAndUnsubscribe, resetOnRefCountZero);
@@ -65,32 +40,27 @@ function share(options) {
             dest.subscribe(subscriber);
             if (!connection &&
                 refCount > 0) {
-                connection = new Subscriber_1.SafeSubscriber({
-                    next: function (value) { return dest.next(value); },
-                    error: function (err) {
+                connection = new SafeSubscriber({
+                    next: (value) => dest.next(value),
+                    error: (err) => {
                         hasErrored = true;
                         cancelReset();
                         resetConnection = handleReset(reset, resetOnError, err);
                         dest.error(err);
                     },
-                    complete: function () {
+                    complete: () => {
                         hasCompleted = true;
                         cancelReset();
                         resetConnection = handleReset(reset, resetOnComplete);
                         dest.complete();
                     },
                 });
-                innerFrom_1.innerFrom(source).subscribe(connection);
+                innerFrom(source).subscribe(connection);
             }
         })(wrapperSource);
     };
 }
-exports.share = share;
-function handleReset(reset, on) {
-    var args = [];
-    for (var _i = 2; _i < arguments.length; _i++) {
-        args[_i - 2] = arguments[_i];
-    }
+function handleReset(reset, on, ...args) {
     if (on === true) {
         reset();
         return;
@@ -98,12 +68,12 @@ function handleReset(reset, on) {
     if (on === false) {
         return;
     }
-    var onSubscriber = new Subscriber_1.SafeSubscriber({
-        next: function () {
+    const onSubscriber = new SafeSubscriber({
+        next: () => {
             onSubscriber.unsubscribe();
             reset();
         },
     });
-    return innerFrom_1.innerFrom(on.apply(void 0, __spreadArray([], __read(args)))).subscribe(onSubscriber);
+    return innerFrom(on(...args)).subscribe(onSubscriber);
 }
 //# sourceMappingURL=share.js.map
