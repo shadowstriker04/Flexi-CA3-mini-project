@@ -1,35 +1,43 @@
+import { __read, __spreadArray } from "tslib";
 import { Observable } from '../Observable';
 import { innerFrom } from './innerFrom';
 import { argsOrArgArray } from '../util/argsOrArgArray';
 import { EMPTY } from './empty';
 import { createOperatorSubscriber } from '../operators/OperatorSubscriber';
 import { popResultSelector } from '../util/args';
-export function zip(...args) {
-    const resultSelector = popResultSelector(args);
-    const sources = argsOrArgArray(args);
+export function zip() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    var resultSelector = popResultSelector(args);
+    var sources = argsOrArgArray(args);
     return sources.length
-        ? new Observable((subscriber) => {
-            let buffers = sources.map(() => []);
-            let completed = sources.map(() => false);
-            subscriber.add(() => {
+        ? new Observable(function (subscriber) {
+            var buffers = sources.map(function () { return []; });
+            var completed = sources.map(function () { return false; });
+            subscriber.add(function () {
                 buffers = completed = null;
             });
-            for (let sourceIndex = 0; !subscriber.closed && sourceIndex < sources.length; sourceIndex++) {
-                innerFrom(sources[sourceIndex]).subscribe(createOperatorSubscriber(subscriber, (value) => {
+            var _loop_1 = function (sourceIndex) {
+                innerFrom(sources[sourceIndex]).subscribe(createOperatorSubscriber(subscriber, function (value) {
                     buffers[sourceIndex].push(value);
-                    if (buffers.every((buffer) => buffer.length)) {
-                        const result = buffers.map((buffer) => buffer.shift());
-                        subscriber.next(resultSelector ? resultSelector(...result) : result);
-                        if (buffers.some((buffer, i) => !buffer.length && completed[i])) {
+                    if (buffers.every(function (buffer) { return buffer.length; })) {
+                        var result = buffers.map(function (buffer) { return buffer.shift(); });
+                        subscriber.next(resultSelector ? resultSelector.apply(void 0, __spreadArray([], __read(result))) : result);
+                        if (buffers.some(function (buffer, i) { return !buffer.length && completed[i]; })) {
                             subscriber.complete();
                         }
                     }
-                }, () => {
+                }, function () {
                     completed[sourceIndex] = true;
                     !buffers[sourceIndex].length && subscriber.complete();
                 }));
+            };
+            for (var sourceIndex = 0; !subscriber.closed && sourceIndex < sources.length; sourceIndex++) {
+                _loop_1(sourceIndex);
             }
-            return () => {
+            return function () {
                 buffers = completed = null;
             };
         })

@@ -5,15 +5,15 @@ export function animationFrames(timestampProvider) {
     return timestampProvider ? animationFramesFactory(timestampProvider) : DEFAULT_ANIMATION_FRAMES;
 }
 function animationFramesFactory(timestampProvider) {
-    return new Observable((subscriber) => {
-        const provider = timestampProvider || performanceTimestampProvider;
-        const start = provider.now();
-        let id = 0;
-        const run = () => {
+    return new Observable(function (subscriber) {
+        var provider = timestampProvider || performanceTimestampProvider;
+        var start = provider.now();
+        var id = 0;
+        var run = function () {
             if (!subscriber.closed) {
-                id = animationFrameProvider.requestAnimationFrame((timestamp) => {
+                id = animationFrameProvider.requestAnimationFrame(function (timestamp) {
                     id = 0;
-                    const now = provider.now();
+                    var now = provider.now();
                     subscriber.next({
                         timestamp: timestampProvider ? now : timestamp,
                         elapsed: now - start,
@@ -23,12 +23,12 @@ function animationFramesFactory(timestampProvider) {
             }
         };
         run();
-        return () => {
+        return function () {
             if (id) {
                 animationFrameProvider.cancelAnimationFrame(id);
             }
         };
     });
 }
-const DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
+var DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
 //# sourceMappingURL=animationFrames.js.map

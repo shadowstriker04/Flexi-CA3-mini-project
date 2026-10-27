@@ -8,35 +8,35 @@ export var NotificationKind;
     NotificationKind["ERROR"] = "E";
     NotificationKind["COMPLETE"] = "C";
 })(NotificationKind || (NotificationKind = {}));
-export class Notification {
-    constructor(kind, value, error) {
+var Notification = (function () {
+    function Notification(kind, value, error) {
         this.kind = kind;
         this.value = value;
         this.error = error;
         this.hasValue = kind === 'N';
     }
-    observe(observer) {
+    Notification.prototype.observe = function (observer) {
         return observeNotification(this, observer);
-    }
-    do(nextHandler, errorHandler, completeHandler) {
-        const { kind, value, error } = this;
+    };
+    Notification.prototype.do = function (nextHandler, errorHandler, completeHandler) {
+        var _a = this, kind = _a.kind, value = _a.value, error = _a.error;
         return kind === 'N' ? nextHandler === null || nextHandler === void 0 ? void 0 : nextHandler(value) : kind === 'E' ? errorHandler === null || errorHandler === void 0 ? void 0 : errorHandler(error) : completeHandler === null || completeHandler === void 0 ? void 0 : completeHandler();
-    }
-    accept(nextOrObserver, error, complete) {
+    };
+    Notification.prototype.accept = function (nextOrObserver, error, complete) {
         var _a;
         return isFunction((_a = nextOrObserver) === null || _a === void 0 ? void 0 : _a.next)
             ? this.observe(nextOrObserver)
             : this.do(nextOrObserver, error, complete);
-    }
-    toObservable() {
-        const { kind, value, error } = this;
-        const result = kind === 'N'
+    };
+    Notification.prototype.toObservable = function () {
+        var _a = this, kind = _a.kind, value = _a.value, error = _a.error;
+        var result = kind === 'N'
             ?
                 of(value)
             :
                 kind === 'E'
                     ?
-                        throwError(() => error)
+                        throwError(function () { return error; })
                     :
                         kind === 'C'
                             ?
@@ -44,24 +44,26 @@ export class Notification {
                             :
                                 0;
         if (!result) {
-            throw new TypeError(`Unexpected notification kind ${kind}`);
+            throw new TypeError("Unexpected notification kind " + kind);
         }
         return result;
-    }
-    static createNext(value) {
+    };
+    Notification.createNext = function (value) {
         return new Notification('N', value);
-    }
-    static createError(err) {
+    };
+    Notification.createError = function (err) {
         return new Notification('E', undefined, err);
-    }
-    static createComplete() {
+    };
+    Notification.createComplete = function () {
         return Notification.completeNotification;
-    }
-}
-Notification.completeNotification = new Notification('C');
+    };
+    Notification.completeNotification = new Notification('C');
+    return Notification;
+}());
+export { Notification };
 export function observeNotification(notification, observer) {
     var _a, _b, _c;
-    const { kind, value, error } = notification;
+    var _d = notification, kind = _d.kind, value = _d.value, error = _d.error;
     if (typeof kind !== 'string') {
         throw new TypeError('Invalid notification, missing "kind"');
     }

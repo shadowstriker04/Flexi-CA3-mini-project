@@ -1,4 +1,4 @@
-export const config = {
+export var config = {
     onUnhandledError: null,
     onStoppedNotification: null,
     Promise: undefined,

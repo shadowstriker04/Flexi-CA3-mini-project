@@ -8,11 +8,11 @@ export function range(start, count, scheduler) {
     if (count <= 0) {
         return EMPTY;
     }
-    const end = count + start;
+    var end = count + start;
     return new Observable(scheduler
         ?
-            (subscriber) => {
-                let n = start;
+            function (subscriber) {
+                var n = start;
                 return scheduler.schedule(function () {
                     if (n < end) {
                         subscriber.next(n++);
@@ -24,8 +24,8 @@ export function range(start, count, scheduler) {
                 });
             }
         :
-            (subscriber) => {
-                let n = start;
+            function (subscriber) {
+                var n = start;
                 while (n < end && !subscriber.closed) {
                     subscriber.next(n++);
                 }

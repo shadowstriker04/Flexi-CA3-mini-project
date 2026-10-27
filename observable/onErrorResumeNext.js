@@ -3,13 +3,17 @@ import { argsOrArgArray } from '../util/argsOrArgArray';
 import { OperatorSubscriber } from '../operators/OperatorSubscriber';
 import { noop } from '../util/noop';
 import { innerFrom } from './innerFrom';
-export function onErrorResumeNext(...sources) {
-    const nextSources = argsOrArgArray(sources);
-    return new Observable((subscriber) => {
-        let sourceIndex = 0;
-        const subscribeNext = () => {
+export function onErrorResumeNext() {
+    var sources = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        sources[_i] = arguments[_i];
+    }
+    var nextSources = argsOrArgArray(sources);
+    return new Observable(function (subscriber) {
+        var sourceIndex = 0;
+        var subscribeNext = function () {
             if (sourceIndex < nextSources.length) {
-                let nextSource;
+                var nextSource = void 0;
                 try {
                     nextSource = innerFrom(nextSources[sourceIndex++]);
                 }
@@ -17,7 +21,7 @@ export function onErrorResumeNext(...sources) {
                     subscribeNext();
                     return;
                 }
-                const innerSubscriber = new OperatorSubscriber(subscriber, undefined, noop, noop);
+                var innerSubscriber = new OperatorSubscriber(subscriber, undefined, noop, noop);
                 nextSource.subscribe(innerSubscriber);
                 innerSubscriber.add(subscribeNext);
             }

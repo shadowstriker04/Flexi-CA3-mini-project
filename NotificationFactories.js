@@ -1,4 +1,4 @@
-export const COMPLETE_NOTIFICATION = (() => createNotification('C', undefined, undefined))();
+export var COMPLETE_NOTIFICATION = (function () { return createNotification('C', undefined, undefined); })();
 export function errorNotification(error) {
     return createNotification('E', undefined, error);
 }
@@ -7,9 +7,9 @@ export function nextNotification(value) {
 }
 export function createNotification(kind, value, error) {
     return {
-        kind,
-        value,
-        error,
+        kind: kind,
+        value: value,
+        error: error,
     };
 }
 //# sourceMappingURL=NotificationFactories.js.map

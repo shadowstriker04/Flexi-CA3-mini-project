@@ -7,32 +7,37 @@ import { popResultSelector, popScheduler } from '../util/args';
 import { createObject } from '../util/createObject';
 import { createOperatorSubscriber } from '../operators/OperatorSubscriber';
 import { executeSchedule } from '../util/executeSchedule';
-export function combineLatest(...args) {
-    const scheduler = popScheduler(args);
-    const resultSelector = popResultSelector(args);
-    const { args: observables, keys } = argsArgArrayOrObject(args);
+export function combineLatest() {
+    var args = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+    }
+    var scheduler = popScheduler(args);
+    var resultSelector = popResultSelector(args);
+    var _a = argsArgArrayOrObject(args), observables = _a.args, keys = _a.keys;
     if (observables.length === 0) {
         return from([], scheduler);
     }
-    const result = new Observable(combineLatestInit(observables, scheduler, keys
+    var result = new Observable(combineLatestInit(observables, scheduler, keys
         ?
-            (values) => createObject(keys, values)
+            function (values) { return createObject(keys, values); }
         :
             identity));
     return resultSelector ? result.pipe(mapOneOrManyArgs(resultSelector)) : result;
 }
-export function combineLatestInit(observables, scheduler, valueTransform = identity) {
-    return (subscriber) => {
-        maybeSchedule(scheduler, () => {
-            const { length } = observables;
-            const values = new Array(length);
-            let active = length;
-            let remainingFirstValues = length;
-            for (let i = 0; i < length; i++) {
-                maybeSchedule(scheduler, () => {
-                    const source = from(observables[i], scheduler);
-                    let hasFirstValue = false;
-                    source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+export function combineLatestInit(observables, scheduler, valueTransform) {
+    if (valueTransform === void 0) { valueTransform = identity; }
+    return function (subscriber) {
+        maybeSchedule(scheduler, function () {
+            var length = observables.length;
+            var values = new Array(length);
+            var active = length;
+            var remainingFirstValues = length;
+            var _loop_1 = function (i) {
+                maybeSchedule(scheduler, function () {
+                    var source = from(observables[i], scheduler);
+                    var hasFirstValue = false;
+                    source.subscribe(createOperatorSubscriber(subscriber, function (value) {
                         values[i] = value;
                         if (!hasFirstValue) {
                             hasFirstValue = true;
@@ -41,12 +46,15 @@ export function combineLatestInit(observables, scheduler, valueTransform = ident
                         if (!remainingFirstValues) {
                             subscriber.next(valueTransform(values.slice()));
                         }
-                    }, () => {
+                    }, function () {
                         if (!--active) {
                             subscriber.complete();
                         }
                     }));
                 }, subscriber);
+            };
+            for (var i = 0; i < length; i++) {
+                _loop_1(i);
             }
         }, subscriber);
     };

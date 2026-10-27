@@ -2,8 +2,10 @@ import { Observable } from '../Observable';
 import { async as asyncScheduler } from '../scheduler/async';
 import { isScheduler } from '../util/isScheduler';
 import { isValidDate } from '../util/isDate';
-export function timer(dueTime = 0, intervalOrScheduler, scheduler = asyncScheduler) {
-    let intervalDuration = -1;
+export function timer(dueTime, intervalOrScheduler, scheduler) {
+    if (dueTime === void 0) { dueTime = 0; }
+    if (scheduler === void 0) { scheduler = asyncScheduler; }
+    var intervalDuration = -1;
     if (intervalOrScheduler != null) {
         if (isScheduler(intervalOrScheduler)) {
             scheduler = intervalOrScheduler;
@@ -12,12 +14,12 @@ export function timer(dueTime = 0, intervalOrScheduler, scheduler = asyncSchedul
             intervalDuration = intervalOrScheduler;
         }
     }
-    return new Observable((subscriber) => {
-        let due = isValidDate(dueTime) ? +dueTime - scheduler.now() : dueTime;
+    return new Observable(function (subscriber) {
+        var due = isValidDate(dueTime) ? +dueTime - scheduler.now() : dueTime;
         if (due < 0) {
             due = 0;
         }
-        let n = 0;
+        var n = 0;
         return scheduler.schedule(function () {
             if (!subscriber.closed) {
                 subscriber.next(n++);

@@ -1,15 +1,15 @@
 import { EmptyError } from './util/EmptyError';
 import { SafeSubscriber } from './Subscriber';
 export function firstValueFrom(source, config) {
-    const hasConfig = typeof config === 'object';
-    return new Promise((resolve, reject) => {
-        const subscriber = new SafeSubscriber({
-            next: (value) => {
+    var hasConfig = typeof config === 'object';
+    return new Promise(function (resolve, reject) {
+        var subscriber = new SafeSubscriber({
+            next: function (value) {
                 resolve(value);
                 subscriber.unsubscribe();
             },
             error: reject,
-            complete: () => {
+            complete: function () {
                 if (hasConfig) {
                     resolve(config.defaultValue);
                 }

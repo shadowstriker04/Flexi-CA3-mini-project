@@ -5,7 +5,7 @@ export function getXHRResponse(xhr) {
                 return xhr.response;
             }
             else {
-                const ieXHR = xhr;
+                var ieXHR = xhr;
                 return JSON.parse(ieXHR.responseText);
             }
         }
@@ -17,7 +17,7 @@ export function getXHRResponse(xhr) {
                 return xhr.response;
             }
             else {
-                const ieXHR = xhr;
+                var ieXHR = xhr;
                 return ieXHR.responseText;
             }
         }

@@ -1,16 +1,16 @@
 import { EmptyError } from './util/EmptyError';
 export function lastValueFrom(source, config) {
-    const hasConfig = typeof config === 'object';
-    return new Promise((resolve, reject) => {
-        let _hasValue = false;
-        let _value;
+    var hasConfig = typeof config === 'object';
+    return new Promise(function (resolve, reject) {
+        var _hasValue = false;
+        var _value;
         source.subscribe({
-            next: (value) => {
+            next: function (value) {
                 _value = value;
                 _hasValue = true;
             },
             error: reject,
-            complete: () => {
+            complete: function () {
                 if (_hasValue) {
                     resolve(_value);
                 }

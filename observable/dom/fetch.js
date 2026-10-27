@@ -1,37 +1,38 @@
-import { __rest } from "tslib";
+import { __assign, __rest } from "tslib";
 import { createOperatorSubscriber } from '../../operators/OperatorSubscriber';
 import { Observable } from '../../Observable';
 import { innerFrom } from '../../observable/innerFrom';
-export function fromFetch(input, initWithSelector = {}) {
-    const { selector } = initWithSelector, init = __rest(initWithSelector, ["selector"]);
-    return new Observable((subscriber) => {
-        const controller = new AbortController();
-        const { signal } = controller;
-        let abortable = true;
-        const { signal: outerSignal } = init;
+export function fromFetch(input, initWithSelector) {
+    if (initWithSelector === void 0) { initWithSelector = {}; }
+    var selector = initWithSelector.selector, init = __rest(initWithSelector, ["selector"]);
+    return new Observable(function (subscriber) {
+        var controller = new AbortController();
+        var signal = controller.signal;
+        var abortable = true;
+        var outerSignal = init.signal;
         if (outerSignal) {
             if (outerSignal.aborted) {
                 controller.abort();
             }
             else {
-                const outerSignalHandler = () => {
+                var outerSignalHandler_1 = function () {
                     if (!signal.aborted) {
                         controller.abort();
                     }
                 };
-                outerSignal.addEventListener('abort', outerSignalHandler);
-                subscriber.add(() => outerSignal.removeEventListener('abort', outerSignalHandler));
+                outerSignal.addEventListener('abort', outerSignalHandler_1);
+                subscriber.add(function () { return outerSignal.removeEventListener('abort', outerSignalHandler_1); });
             }
         }
-        const perSubscriberInit = Object.assign(Object.assign({}, init), { signal });
-        const handleError = (err) => {
+        var perSubscriberInit = __assign(__assign({}, init), { signal: signal });
+        var handleError = function (err) {
             abortable = false;
             subscriber.error(err);
         };
         fetch(input, perSubscriberInit)
-            .then((response) => {
+            .then(function (response) {
             if (selector) {
-                innerFrom(selector(response)).subscribe(createOperatorSubscriber(subscriber, undefined, () => {
+                innerFrom(selector(response)).subscribe(createOperatorSubscriber(subscriber, undefined, function () {
                     abortable = false;
                     subscriber.complete();
                 }, handleError));
@@ -43,7 +44,7 @@ export function fromFetch(input, initWithSelector = {}) {
             }
         })
             .catch(handleError);
-        return () => {
+        return function () {
             if (abortable) {
                 controller.abort();
             }
