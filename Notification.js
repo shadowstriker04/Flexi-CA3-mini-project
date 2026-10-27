@@ -1,76 +1,70 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.observeNotification = exports.Notification = exports.NotificationKind = void 0;
-var empty_1 = require("./observable/empty");
-var of_1 = require("./observable/of");
-var throwError_1 = require("./observable/throwError");
-var isFunction_1 = require("./util/isFunction");
-var NotificationKind;
+import { EMPTY } from './observable/empty';
+import { of } from './observable/of';
+import { throwError } from './observable/throwError';
+import { isFunction } from './util/isFunction';
+export var NotificationKind;
 (function (NotificationKind) {
     NotificationKind["NEXT"] = "N";
     NotificationKind["ERROR"] = "E";
     NotificationKind["COMPLETE"] = "C";
-})(NotificationKind = exports.NotificationKind || (exports.NotificationKind = {}));
-var Notification = (function () {
-    function Notification(kind, value, error) {
+})(NotificationKind || (NotificationKind = {}));
+export class Notification {
+    constructor(kind, value, error) {
         this.kind = kind;
         this.value = value;
         this.error = error;
         this.hasValue = kind === 'N';
     }
-    Notification.prototype.observe = function (observer) {
+    observe(observer) {
         return observeNotification(this, observer);
-    };
-    Notification.prototype.do = function (nextHandler, errorHandler, completeHandler) {
-        var _a = this, kind = _a.kind, value = _a.value, error = _a.error;
+    }
+    do(nextHandler, errorHandler, completeHandler) {
+        const { kind, value, error } = this;
         return kind === 'N' ? nextHandler === null || nextHandler === void 0 ? void 0 : nextHandler(value) : kind === 'E' ? errorHandler === null || errorHandler === void 0 ? void 0 : errorHandler(error) : completeHandler === null || completeHandler === void 0 ? void 0 : completeHandler();
-    };
-    Notification.prototype.accept = function (nextOrObserver, error, complete) {
+    }
+    accept(nextOrObserver, error, complete) {
         var _a;
-        return isFunction_1.isFunction((_a = nextOrObserver) === null || _a === void 0 ? void 0 : _a.next)
+        return isFunction((_a = nextOrObserver) === null || _a === void 0 ? void 0 : _a.next)
             ? this.observe(nextOrObserver)
             : this.do(nextOrObserver, error, complete);
-    };
-    Notification.prototype.toObservable = function () {
-        var _a = this, kind = _a.kind, value = _a.value, error = _a.error;
-        var result = kind === 'N'
+    }
+    toObservable() {
+        const { kind, value, error } = this;
+        const result = kind === 'N'
             ?
-                of_1.of(value)
+                of(value)
             :
                 kind === 'E'
                     ?
-                        throwError_1.throwError(function () { return error; })
+                        throwError(() => error)
                     :
                         kind === 'C'
                             ?
-                                empty_1.EMPTY
+                                EMPTY
                             :
                                 0;
         if (!result) {
-            throw new TypeError("Unexpected notification kind " + kind);
+            throw new TypeError(`Unexpected notification kind ${kind}`);
         }
         return result;
-    };
-    Notification.createNext = function (value) {
+    }
+    static createNext(value) {
         return new Notification('N', value);
-    };
-    Notification.createError = function (err) {
+    }
+    static createError(err) {
         return new Notification('E', undefined, err);
-    };
-    Notification.createComplete = function () {
+    }
+    static createComplete() {
         return Notification.completeNotification;
-    };
-    Notification.completeNotification = new Notification('C');
-    return Notification;
-}());
-exports.Notification = Notification;
-function observeNotification(notification, observer) {
+    }
+}
+Notification.completeNotification = new Notification('C');
+export function observeNotification(notification, observer) {
     var _a, _b, _c;
-    var _d = notification, kind = _d.kind, value = _d.value, error = _d.error;
+    const { kind, value, error } = notification;
     if (typeof kind !== 'string') {
         throw new TypeError('Invalid notification, missing "kind"');
     }
     kind === 'N' ? (_a = observer.next) === null || _a === void 0 ? void 0 : _a.call(observer, value) : kind === 'E' ? (_b = observer.error) === null || _b === void 0 ? void 0 : _b.call(observer, error) : (_c = observer.complete) === null || _c === void 0 ? void 0 : _c.call(observer);
 }
-exports.observeNotification = observeNotification;
 //# sourceMappingURL=Notification.js.map

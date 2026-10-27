@@ -1,11 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.partition = void 0;
-var not_1 = require("../util/not");
-var filter_1 = require("../operators/filter");
-var innerFrom_1 = require("./innerFrom");
-function partition(source, predicate, thisArg) {
-    return [filter_1.filter(predicate, thisArg)(innerFrom_1.innerFrom(source)), filter_1.filter(not_1.not(predicate, thisArg))(innerFrom_1.innerFrom(source))];
+import { not } from '../util/not';
+import { filter } from '../operators/filter';
+import { innerFrom } from './innerFrom';
+export function partition(source, predicate, thisArg) {
+    return [filter(predicate, thisArg)(innerFrom(source)), filter(not(predicate, thisArg))(innerFrom(source))];
 }
-exports.partition = partition;
 //# sourceMappingURL=partition.js.map

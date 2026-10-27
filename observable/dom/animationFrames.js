@@ -1,23 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.animationFrames = void 0;
-var Observable_1 = require("../../Observable");
-var performanceTimestampProvider_1 = require("../../scheduler/performanceTimestampProvider");
-var animationFrameProvider_1 = require("../../scheduler/animationFrameProvider");
-function animationFrames(timestampProvider) {
+import { Observable } from '../../Observable';
+import { performanceTimestampProvider } from '../../scheduler/performanceTimestampProvider';
+import { animationFrameProvider } from '../../scheduler/animationFrameProvider';
+export function animationFrames(timestampProvider) {
     return timestampProvider ? animationFramesFactory(timestampProvider) : DEFAULT_ANIMATION_FRAMES;
 }
-exports.animationFrames = animationFrames;
 function animationFramesFactory(timestampProvider) {
-    return new Observable_1.Observable(function (subscriber) {
-        var provider = timestampProvider || performanceTimestampProvider_1.performanceTimestampProvider;
-        var start = provider.now();
-        var id = 0;
-        var run = function () {
+    return new Observable((subscriber) => {
+        const provider = timestampProvider || performanceTimestampProvider;
+        const start = provider.now();
+        let id = 0;
+        const run = () => {
             if (!subscriber.closed) {
-                id = animationFrameProvider_1.animationFrameProvider.requestAnimationFrame(function (timestamp) {
+                id = animationFrameProvider.requestAnimationFrame((timestamp) => {
                     id = 0;
-                    var now = provider.now();
+                    const now = provider.now();
                     subscriber.next({
                         timestamp: timestampProvider ? now : timestamp,
                         elapsed: now - start,
@@ -27,12 +23,12 @@ function animationFramesFactory(timestampProvider) {
             }
         };
         run();
-        return function () {
+        return () => {
             if (id) {
-                animationFrameProvider_1.animationFrameProvider.cancelAnimationFrame(id);
+                animationFrameProvider.cancelAnimationFrame(id);
             }
         };
     });
 }
-var DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
+const DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
 //# sourceMappingURL=animationFrames.js.map

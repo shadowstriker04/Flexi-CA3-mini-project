@@ -1,60 +1,30 @@
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.WebSocketSubject = void 0;
-var Subject_1 = require("../../Subject");
-var Subscriber_1 = require("../../Subscriber");
-var Observable_1 = require("../../Observable");
-var Subscription_1 = require("../../Subscription");
-var ReplaySubject_1 = require("../../ReplaySubject");
-var DEFAULT_WEBSOCKET_CONFIG = {
+import { Subject, AnonymousSubject } from '../../Subject';
+import { Subscriber } from '../../Subscriber';
+import { Observable } from '../../Observable';
+import { Subscription } from '../../Subscription';
+import { ReplaySubject } from '../../ReplaySubject';
+const DEFAULT_WEBSOCKET_CONFIG = {
     url: '',
-    deserializer: function (e) { return JSON.parse(e.data); },
-    serializer: function (value) { return JSON.stringify(value); },
+    deserializer: (e) => JSON.parse(e.data),
+    serializer: (value) => JSON.stringify(value),
 };
-var WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT = 'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }';
-var WebSocketSubject = (function (_super) {
-    __extends(WebSocketSubject, _super);
-    function WebSocketSubject(urlConfigOrSource, destination) {
-        var _this = _super.call(this) || this;
-        _this._socket = null;
-        if (urlConfigOrSource instanceof Observable_1.Observable) {
-            _this.destination = destination;
-            _this.source = urlConfigOrSource;
+const WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT = 'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }';
+export class WebSocketSubject extends AnonymousSubject {
+    constructor(urlConfigOrSource, destination) {
+        super();
+        this._socket = null;
+        if (urlConfigOrSource instanceof Observable) {
+            this.destination = destination;
+            this.source = urlConfigOrSource;
         }
         else {
-            var config = (_this._config = __assign({}, DEFAULT_WEBSOCKET_CONFIG));
-            _this._output = new Subject_1.Subject();
+            const config = (this._config = Object.assign({}, DEFAULT_WEBSOCKET_CONFIG));
+            this._output = new Subject();
             if (typeof urlConfigOrSource === 'string') {
                 config.url = urlConfigOrSource;
             }
             else {
-                for (var key in urlConfigOrSource) {
+                for (const key in urlConfigOrSource) {
                     if (urlConfigOrSource.hasOwnProperty(key)) {
                         config[key] = urlConfigOrSource[key];
                     }
@@ -66,34 +36,33 @@ var WebSocketSubject = (function (_super) {
             else if (!config.WebSocketCtor) {
                 throw new Error('no WebSocket constructor can be found');
             }
-            _this.destination = new ReplaySubject_1.ReplaySubject();
+            this.destination = new ReplaySubject();
         }
-        return _this;
     }
-    WebSocketSubject.prototype.lift = function (operator) {
-        var sock = new WebSocketSubject(this._config, this.destination);
+    lift(operator) {
+        const sock = new WebSocketSubject(this._config, this.destination);
         sock.operator = operator;
         sock.source = this;
         return sock;
-    };
-    WebSocketSubject.prototype._resetState = function () {
+    }
+    _resetState() {
         this._socket = null;
         if (!this.source) {
-            this.destination = new ReplaySubject_1.ReplaySubject();
+            this.destination = new ReplaySubject();
         }
-        this._output = new Subject_1.Subject();
-    };
-    WebSocketSubject.prototype.multiplex = function (subMsg, unsubMsg, messageFilter) {
-        var self = this;
-        return new Observable_1.Observable(function (observer) {
+        this._output = new Subject();
+    }
+    multiplex(subMsg, unsubMsg, messageFilter) {
+        const self = this;
+        return new Observable((observer) => {
             try {
                 self.next(subMsg());
             }
             catch (err) {
                 observer.error(err);
             }
-            var subscription = self.subscribe({
-                next: function (x) {
+            const subscription = self.subscribe({
+                next: (x) => {
                     try {
                         if (messageFilter(x)) {
                             observer.next(x);
@@ -103,10 +72,10 @@ var WebSocketSubject = (function (_super) {
                         observer.error(err);
                     }
                 },
-                error: function (err) { return observer.error(err); },
-                complete: function () { return observer.complete(); },
+                error: (err) => observer.error(err),
+                complete: () => observer.complete(),
             });
-            return function () {
+            return () => {
                 try {
                     self.next(unsubMsg());
                 }
@@ -116,12 +85,11 @@ var WebSocketSubject = (function (_super) {
                 subscription.unsubscribe();
             };
         });
-    };
-    WebSocketSubject.prototype._connectSocket = function () {
-        var _this = this;
-        var _a = this._config, WebSocketCtor = _a.WebSocketCtor, protocol = _a.protocol, url = _a.url, binaryType = _a.binaryType;
-        var observer = this._output;
-        var socket = null;
+    }
+    _connectSocket() {
+        const { WebSocketCtor, protocol, url, binaryType } = this._config;
+        const observer = this._output;
+        let socket = null;
         try {
             socket = protocol ? new WebSocketCtor(url, protocol) : new WebSocketCtor(url);
             this._socket = socket;
@@ -133,36 +101,36 @@ var WebSocketSubject = (function (_super) {
             observer.error(e);
             return;
         }
-        var subscription = new Subscription_1.Subscription(function () {
-            _this._socket = null;
+        const subscription = new Subscription(() => {
+            this._socket = null;
             if (socket && socket.readyState === 1) {
                 socket.close();
             }
         });
-        socket.onopen = function (evt) {
-            var _socket = _this._socket;
+        socket.onopen = (evt) => {
+            const { _socket } = this;
             if (!_socket) {
                 socket.close();
-                _this._resetState();
+                this._resetState();
                 return;
             }
-            var openObserver = _this._config.openObserver;
+            const { openObserver } = this._config;
             if (openObserver) {
                 openObserver.next(evt);
             }
-            var queue = _this.destination;
-            _this.destination = Subscriber_1.Subscriber.create(function (x) {
+            const queue = this.destination;
+            this.destination = Subscriber.create((x) => {
                 if (socket.readyState === 1) {
                     try {
-                        var serializer = _this._config.serializer;
+                        const { serializer } = this._config;
                         socket.send(serializer(x));
                     }
                     catch (e) {
-                        _this.destination.error(e);
+                        this.destination.error(e);
                     }
                 }
-            }, function (err) {
-                var closingObserver = _this._config.closingObserver;
+            }, (err) => {
+                const { closingObserver } = this._config;
                 if (closingObserver) {
                     closingObserver.next(undefined);
                 }
@@ -172,28 +140,28 @@ var WebSocketSubject = (function (_super) {
                 else {
                     observer.error(new TypeError(WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT));
                 }
-                _this._resetState();
-            }, function () {
-                var closingObserver = _this._config.closingObserver;
+                this._resetState();
+            }, () => {
+                const { closingObserver } = this._config;
                 if (closingObserver) {
                     closingObserver.next(undefined);
                 }
                 socket.close();
-                _this._resetState();
+                this._resetState();
             });
-            if (queue && queue instanceof ReplaySubject_1.ReplaySubject) {
-                subscription.add(queue.subscribe(_this.destination));
+            if (queue && queue instanceof ReplaySubject) {
+                subscription.add(queue.subscribe(this.destination));
             }
         };
-        socket.onerror = function (e) {
-            _this._resetState();
+        socket.onerror = (e) => {
+            this._resetState();
             observer.error(e);
         };
-        socket.onclose = function (e) {
-            if (socket === _this._socket) {
-                _this._resetState();
+        socket.onclose = (e) => {
+            if (socket === this._socket) {
+                this._resetState();
             }
-            var closeObserver = _this._config.closeObserver;
+            const { closeObserver } = this._config;
             if (closeObserver) {
                 closeObserver.next(e);
             }
@@ -204,19 +172,18 @@ var WebSocketSubject = (function (_super) {
                 observer.error(e);
             }
         };
-        socket.onmessage = function (e) {
+        socket.onmessage = (e) => {
             try {
-                var deserializer = _this._config.deserializer;
+                const { deserializer } = this._config;
                 observer.next(deserializer(e));
             }
             catch (err) {
                 observer.error(err);
             }
         };
-    };
-    WebSocketSubject.prototype._subscribe = function (subscriber) {
-        var _this = this;
-        var source = this.source;
+    }
+    _subscribe(subscriber) {
+        const { source } = this;
         if (source) {
             return source.subscribe(subscriber);
         }
@@ -224,26 +191,24 @@ var WebSocketSubject = (function (_super) {
             this._connectSocket();
         }
         this._output.subscribe(subscriber);
-        subscriber.add(function () {
-            var _socket = _this._socket;
-            if (_this._output.observers.length === 0) {
+        subscriber.add(() => {
+            const { _socket } = this;
+            if (this._output.observers.length === 0) {
                 if (_socket && (_socket.readyState === 1 || _socket.readyState === 0)) {
                     _socket.close();
                 }
-                _this._resetState();
+                this._resetState();
             }
         });
         return subscriber;
-    };
-    WebSocketSubject.prototype.unsubscribe = function () {
-        var _socket = this._socket;
+    }
+    unsubscribe() {
+        const { _socket } = this;
         if (_socket && (_socket.readyState === 1 || _socket.readyState === 0)) {
             _socket.close();
         }
         this._resetState();
-        _super.prototype.unsubscribe.call(this);
-    };
-    return WebSocketSubject;
-}(Subject_1.AnonymousSubject));
-exports.WebSocketSubject = WebSocketSubject;
+        super.unsubscribe();
+    }
+}
 //# sourceMappingURL=WebSocketSubject.js.map

@@ -1,19 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.lastValueFrom = void 0;
-var EmptyError_1 = require("./util/EmptyError");
-function lastValueFrom(source, config) {
-    var hasConfig = typeof config === 'object';
-    return new Promise(function (resolve, reject) {
-        var _hasValue = false;
-        var _value;
+import { EmptyError } from './util/EmptyError';
+export function lastValueFrom(source, config) {
+    const hasConfig = typeof config === 'object';
+    return new Promise((resolve, reject) => {
+        let _hasValue = false;
+        let _value;
         source.subscribe({
-            next: function (value) {
+            next: (value) => {
                 _value = value;
                 _hasValue = true;
             },
             error: reject,
-            complete: function () {
+            complete: () => {
                 if (_hasValue) {
                     resolve(_value);
                 }
@@ -21,11 +18,10 @@ function lastValueFrom(source, config) {
                     resolve(config.defaultValue);
                 }
                 else {
-                    reject(new EmptyError_1.EmptyError());
+                    reject(new EmptyError());
                 }
             },
         });
     });
 }
-exports.lastValueFrom = lastValueFrom;
 //# sourceMappingURL=lastValueFrom.js.map

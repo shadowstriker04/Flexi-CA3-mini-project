@@ -1,31 +1,26 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.connectable = void 0;
-var Subject_1 = require("../Subject");
-var Observable_1 = require("../Observable");
-var defer_1 = require("./defer");
-var DEFAULT_CONFIG = {
-    connector: function () { return new Subject_1.Subject(); },
+import { Subject } from '../Subject';
+import { Observable } from '../Observable';
+import { defer } from './defer';
+const DEFAULT_CONFIG = {
+    connector: () => new Subject(),
     resetOnDisconnect: true,
 };
-function connectable(source, config) {
-    if (config === void 0) { config = DEFAULT_CONFIG; }
-    var connection = null;
-    var connector = config.connector, _a = config.resetOnDisconnect, resetOnDisconnect = _a === void 0 ? true : _a;
-    var subject = connector();
-    var result = new Observable_1.Observable(function (subscriber) {
+export function connectable(source, config = DEFAULT_CONFIG) {
+    let connection = null;
+    const { connector, resetOnDisconnect = true } = config;
+    let subject = connector();
+    const result = new Observable((subscriber) => {
         return subject.subscribe(subscriber);
     });
-    result.connect = function () {
+    result.connect = () => {
         if (!connection || connection.closed) {
-            connection = defer_1.defer(function () { return source; }).subscribe(subject);
+            connection = defer(() => source).subscribe(subject);
             if (resetOnDisconnect) {
-                connection.add(function () { return (subject = connector()); });
+                connection.add(() => (subject = connector()));
             }
         }
         return connection;
     };
     return result;
 }
-exports.connectable = connectable;
 //# sourceMappingURL=connectable.js.map

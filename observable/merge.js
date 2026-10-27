@@ -1,27 +1,19 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.merge = void 0;
-var mergeAll_1 = require("../operators/mergeAll");
-var innerFrom_1 = require("./innerFrom");
-var empty_1 = require("./empty");
-var args_1 = require("../util/args");
-var from_1 = require("./from");
-function merge() {
-    var args = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-    }
-    var scheduler = args_1.popScheduler(args);
-    var concurrent = args_1.popNumber(args, Infinity);
-    var sources = args;
+import { mergeAll } from '../operators/mergeAll';
+import { innerFrom } from './innerFrom';
+import { EMPTY } from './empty';
+import { popNumber, popScheduler } from '../util/args';
+import { from } from './from';
+export function merge(...args) {
+    const scheduler = popScheduler(args);
+    const concurrent = popNumber(args, Infinity);
+    const sources = args;
     return !sources.length
         ?
-            empty_1.EMPTY
+            EMPTY
         : sources.length === 1
             ?
-                innerFrom_1.innerFrom(sources[0])
+                innerFrom(sources[0])
             :
-                mergeAll_1.mergeAll(concurrent)(from_1.from(sources, scheduler));
+                mergeAll(concurrent)(from(sources, scheduler));
 }
-exports.merge = merge;
 //# sourceMappingURL=merge.js.map
