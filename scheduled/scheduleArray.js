@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.scheduleArray = void 0;
-var Observable_1 = require("../Observable");
-function scheduleArray(input, scheduler) {
-    return new Observable_1.Observable(function (subscriber) {
-        var i = 0;
+import { Observable } from '../Observable';
+export function scheduleArray(input, scheduler) {
+    return new Observable((subscriber) => {
+        let i = 0;
         return scheduler.schedule(function () {
             if (i === input.length) {
                 subscriber.complete();
@@ -18,5 +15,4 @@ function scheduleArray(input, scheduler) {
         });
     });
 }
-exports.scheduleArray = scheduleArray;
 //# sourceMappingURL=scheduleArray.js.map

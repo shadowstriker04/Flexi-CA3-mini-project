@@ -1,21 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.throwIfEmpty = void 0;
-var EmptyError_1 = require("../util/EmptyError");
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function throwIfEmpty(errorFactory) {
-    if (errorFactory === void 0) { errorFactory = defaultErrorFactory; }
-    return lift_1.operate(function (source, subscriber) {
-        var hasValue = false;
-        source.subscribe(OperatorSubscriber_1.createOperatorSubscriber(subscriber, function (value) {
+import { EmptyError } from '../util/EmptyError';
+import { operate } from '../util/lift';
+import { createOperatorSubscriber } from './OperatorSubscriber';
+export function throwIfEmpty(errorFactory = defaultErrorFactory) {
+    return operate((source, subscriber) => {
+        let hasValue = false;
+        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
             hasValue = true;
             subscriber.next(value);
-        }, function () { return (hasValue ? subscriber.complete() : subscriber.error(errorFactory())); }));
+        }, () => (hasValue ? subscriber.complete() : subscriber.error(errorFactory()))));
     });
 }
-exports.throwIfEmpty = throwIfEmpty;
 function defaultErrorFactory() {
-    return new EmptyError_1.EmptyError();
+    return new EmptyError();
 }
 //# sourceMappingURL=throwIfEmpty.js.map

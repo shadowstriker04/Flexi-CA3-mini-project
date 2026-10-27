@@ -1,17 +1,14 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.scheduleAsyncIterable = void 0;
-var Observable_1 = require("../Observable");
-var executeSchedule_1 = require("../util/executeSchedule");
-function scheduleAsyncIterable(input, scheduler) {
+import { Observable } from '../Observable';
+import { executeSchedule } from '../util/executeSchedule';
+export function scheduleAsyncIterable(input, scheduler) {
     if (!input) {
         throw new Error('Iterable cannot be null');
     }
-    return new Observable_1.Observable(function (subscriber) {
-        executeSchedule_1.executeSchedule(subscriber, scheduler, function () {
-            var iterator = input[Symbol.asyncIterator]();
-            executeSchedule_1.executeSchedule(subscriber, scheduler, function () {
-                iterator.next().then(function (result) {
+    return new Observable((subscriber) => {
+        executeSchedule(subscriber, scheduler, () => {
+            const iterator = input[Symbol.asyncIterator]();
+            executeSchedule(subscriber, scheduler, () => {
+                iterator.next().then((result) => {
                     if (result.done) {
                         subscriber.complete();
                     }
@@ -23,5 +20,4 @@ function scheduleAsyncIterable(input, scheduler) {
         });
     });
 }
-exports.scheduleAsyncIterable = scheduleAsyncIterable;
 //# sourceMappingURL=scheduleAsyncIterable.js.map
