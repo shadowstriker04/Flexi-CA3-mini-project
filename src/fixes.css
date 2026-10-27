@@ -1,0 +1,7 @@
+nav button{width:100%;border:0;background:transparent;color:#8da1ae;padding:13px 12px;border-radius:8px;display:flex;gap:13px;align-items:center;font-size:14px;text-align:left}
+nav button:hover,nav button.active{background:#123b42;color:#fff}
+.nav-label{font-size:10px;letter-spacing:1.5px;margin:0 12px 5px;color:#536b78}
+.sidebottom button{margin-left:auto;background:none;color:#77909b;font-size:18px}
+.notice{margin:18px 0 0;padding:10px 14px;background:#fff5e7;border:1px solid #f4d4aa;border-radius:8px;color:#99651f;font-size:12px}.notice button{float:right;background:none;color:inherit;font-size:16px}
+.empty-page{margin-top:55px;min-height:360px;background:#fff;border:1px solid #e4ecef;border-radius:14px;display:grid;place-items:center;align-content:center;gap:10px;text-align:center}.empty-art{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:#e1f7f2;color:#0d9489;font-size:27px}.empty-page h2{font:700 20px Manrope}.empty-page p{color:#8a9ba4;font-size:13px;margin-bottom:8px}.empty{padding:42px;text-align:center;color:#8798a1;font-size:13px}
+@media(max-width:650px){nav button{padding:12px 8px}}
