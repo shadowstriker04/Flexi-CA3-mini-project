@@ -3,19 +3,19 @@ import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 import { innerFrom } from '../observable/innerFrom';
 export function windowWhen(closingSelector) {
-    return operate((source, subscriber) => {
-        let window;
-        let closingSubscriber;
-        const handleError = (err) => {
+    return operate(function (source, subscriber) {
+        var window;
+        var closingSubscriber;
+        var handleError = function (err) {
             window.error(err);
             subscriber.error(err);
         };
-        const openWindow = () => {
+        var openWindow = function () {
             closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
             window === null || window === void 0 ? void 0 : window.complete();
             window = new Subject();
             subscriber.next(window.asObservable());
-            let closingNotifier;
+            var closingNotifier;
             try {
                 closingNotifier = innerFrom(closingSelector());
             }
@@ -26,10 +26,10 @@ export function windowWhen(closingSelector) {
             closingNotifier.subscribe((closingSubscriber = createOperatorSubscriber(subscriber, openWindow, openWindow, handleError)));
         };
         openWindow();
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => window.next(value), () => {
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) { return window.next(value); }, function () {
             window.complete();
             subscriber.complete();
-        }, handleError, () => {
+        }, handleError, function () {
             closingSubscriber === null || closingSubscriber === void 0 ? void 0 : closingSubscriber.unsubscribe();
             window = null;
         }));

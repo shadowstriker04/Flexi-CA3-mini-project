@@ -1,13 +1,18 @@
-export const timeoutProvider = {
-    setTimeout(handler, timeout, ...args) {
-        const { delegate } = timeoutProvider;
-        if (delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) {
-            return delegate.setTimeout(handler, timeout, ...args);
+import { __read, __spreadArray } from "tslib";
+export var timeoutProvider = {
+    setTimeout: function (handler, timeout) {
+        var args = [];
+        for (var _i = 2; _i < arguments.length; _i++) {
+            args[_i - 2] = arguments[_i];
         }
-        return setTimeout(handler, timeout, ...args);
+        var delegate = timeoutProvider.delegate;
+        if (delegate === null || delegate === void 0 ? void 0 : delegate.setTimeout) {
+            return delegate.setTimeout.apply(delegate, __spreadArray([handler, timeout], __read(args)));
+        }
+        return setTimeout.apply(void 0, __spreadArray([handler, timeout], __read(args)));
     },
-    clearTimeout(handle) {
-        const { delegate } = timeoutProvider;
+    clearTimeout: function (handle) {
+        var delegate = timeoutProvider.delegate;
         return ((delegate === null || delegate === void 0 ? void 0 : delegate.clearTimeout) || clearTimeout)(handle);
     },
     delegate: undefined,

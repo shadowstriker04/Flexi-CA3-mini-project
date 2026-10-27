@@ -5,30 +5,33 @@ import { innerFrom } from '../observable/innerFrom';
 import { createErrorClass } from '../util/createErrorClass';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 import { executeSchedule } from '../util/executeSchedule';
-export const TimeoutError = createErrorClass((_super) => function TimeoutErrorImpl(info = null) {
-    _super(this);
-    this.message = 'Timeout has occurred';
-    this.name = 'TimeoutError';
-    this.info = info;
+export var TimeoutError = createErrorClass(function (_super) {
+    return function TimeoutErrorImpl(info) {
+        if (info === void 0) { info = null; }
+        _super(this);
+        this.message = 'Timeout has occurred';
+        this.name = 'TimeoutError';
+        this.info = info;
+    };
 });
 export function timeout(config, schedulerArg) {
-    const { first, each, with: _with = timeoutErrorFactory, scheduler = schedulerArg !== null && schedulerArg !== void 0 ? schedulerArg : asyncScheduler, meta = null, } = (isValidDate(config) ? { first: config } : typeof config === 'number' ? { each: config } : config);
+    var _a = (isValidDate(config) ? { first: config } : typeof config === 'number' ? { each: config } : config), first = _a.first, each = _a.each, _b = _a.with, _with = _b === void 0 ? timeoutErrorFactory : _b, _c = _a.scheduler, scheduler = _c === void 0 ? schedulerArg !== null && schedulerArg !== void 0 ? schedulerArg : asyncScheduler : _c, _d = _a.meta, meta = _d === void 0 ? null : _d;
     if (first == null && each == null) {
         throw new TypeError('No timeout provided.');
     }
-    return operate((source, subscriber) => {
-        let originalSourceSubscription;
-        let timerSubscription;
-        let lastValue = null;
-        let seen = 0;
-        const startTimer = (delay) => {
-            timerSubscription = executeSchedule(subscriber, scheduler, () => {
+    return operate(function (source, subscriber) {
+        var originalSourceSubscription;
+        var timerSubscription;
+        var lastValue = null;
+        var seen = 0;
+        var startTimer = function (delay) {
+            timerSubscription = executeSchedule(subscriber, scheduler, function () {
                 try {
                     originalSourceSubscription.unsubscribe();
                     innerFrom(_with({
-                        meta,
-                        lastValue,
-                        seen,
+                        meta: meta,
+                        lastValue: lastValue,
+                        seen: seen,
                     })).subscribe(subscriber);
                 }
                 catch (err) {
@@ -36,12 +39,12 @@ export function timeout(config, schedulerArg) {
                 }
             }, delay);
         };
-        originalSourceSubscription = source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+        originalSourceSubscription = source.subscribe(createOperatorSubscriber(subscriber, function (value) {
             timerSubscription === null || timerSubscription === void 0 ? void 0 : timerSubscription.unsubscribe();
             seen++;
             subscriber.next((lastValue = value));
             each > 0 && startTimer(each);
-        }, undefined, undefined, () => {
+        }, undefined, undefined, function () {
             if (!(timerSubscription === null || timerSubscription === void 0 ? void 0 : timerSubscription.closed)) {
                 timerSubscription === null || timerSubscription === void 0 ? void 0 : timerSubscription.unsubscribe();
             }

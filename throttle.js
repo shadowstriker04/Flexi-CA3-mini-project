@@ -2,13 +2,13 @@ import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 import { innerFrom } from '../observable/innerFrom';
 export function throttle(durationSelector, config) {
-    return operate((source, subscriber) => {
-        const { leading = true, trailing = false } = config !== null && config !== void 0 ? config : {};
-        let hasValue = false;
-        let sendValue = null;
-        let throttled = null;
-        let isComplete = false;
-        const endThrottling = () => {
+    return operate(function (source, subscriber) {
+        var _a = config !== null && config !== void 0 ? config : {}, _b = _a.leading, leading = _b === void 0 ? true : _b, _c = _a.trailing, trailing = _c === void 0 ? false : _c;
+        var hasValue = false;
+        var sendValue = null;
+        var throttled = null;
+        var isComplete = false;
+        var endThrottling = function () {
             throttled === null || throttled === void 0 ? void 0 : throttled.unsubscribe();
             throttled = null;
             if (trailing) {
@@ -16,25 +16,27 @@ export function throttle(durationSelector, config) {
                 isComplete && subscriber.complete();
             }
         };
-        const cleanupThrottling = () => {
+        var cleanupThrottling = function () {
             throttled = null;
             isComplete && subscriber.complete();
         };
-        const startThrottle = (value) => (throttled = innerFrom(durationSelector(value)).subscribe(createOperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
-        const send = () => {
+        var startThrottle = function (value) {
+            return (throttled = innerFrom(durationSelector(value)).subscribe(createOperatorSubscriber(subscriber, endThrottling, cleanupThrottling)));
+        };
+        var send = function () {
             if (hasValue) {
                 hasValue = false;
-                const value = sendValue;
+                var value = sendValue;
                 sendValue = null;
                 subscriber.next(value);
                 !isComplete && startThrottle(value);
             }
         };
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) {
             hasValue = true;
             sendValue = value;
             !(throttled && !throttled.closed) && (leading ? send() : startThrottle(value));
-        }, () => {
+        }, function () {
             isComplete = true;
             !(trailing && hasValue && throttled && !throttled.closed) && subscriber.complete();
         }));

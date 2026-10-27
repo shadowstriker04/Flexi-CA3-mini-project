@@ -1,5 +1,5 @@
 import { AsapAction } from './AsapAction';
 import { AsapScheduler } from './AsapScheduler';
-export const asapScheduler = new AsapScheduler(AsapAction);
-export const asap = asapScheduler;
+export var asapScheduler = new AsapScheduler(AsapAction);
+export var asap = asapScheduler;
 //# sourceMappingURL=asap.js.map

@@ -4,11 +4,11 @@ export function scheduleAsyncIterable(input, scheduler) {
     if (!input) {
         throw new Error('Iterable cannot be null');
     }
-    return new Observable((subscriber) => {
-        executeSchedule(subscriber, scheduler, () => {
-            const iterator = input[Symbol.asyncIterator]();
-            executeSchedule(subscriber, scheduler, () => {
-                iterator.next().then((result) => {
+    return new Observable(function (subscriber) {
+        executeSchedule(subscriber, scheduler, function () {
+            var iterator = input[Symbol.asyncIterator]();
+            executeSchedule(subscriber, scheduler, function () {
+                iterator.next().then(function (result) {
                     if (result.done) {
                         subscriber.complete();
                     }

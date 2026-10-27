@@ -1,26 +1,35 @@
+import { __read, __spreadArray } from "tslib";
 import { Subscription } from '../Subscription';
-export const animationFrameProvider = {
-    schedule(callback) {
-        let request = requestAnimationFrame;
-        let cancel = cancelAnimationFrame;
-        const { delegate } = animationFrameProvider;
+export var animationFrameProvider = {
+    schedule: function (callback) {
+        var request = requestAnimationFrame;
+        var cancel = cancelAnimationFrame;
+        var delegate = animationFrameProvider.delegate;
         if (delegate) {
             request = delegate.requestAnimationFrame;
             cancel = delegate.cancelAnimationFrame;
         }
-        const handle = request((timestamp) => {
+        var handle = request(function (timestamp) {
             cancel = undefined;
             callback(timestamp);
         });
-        return new Subscription(() => cancel === null || cancel === void 0 ? void 0 : cancel(handle));
+        return new Subscription(function () { return cancel === null || cancel === void 0 ? void 0 : cancel(handle); });
     },
-    requestAnimationFrame(...args) {
-        const { delegate } = animationFrameProvider;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.requestAnimationFrame) || requestAnimationFrame)(...args);
+    requestAnimationFrame: function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var delegate = animationFrameProvider.delegate;
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.requestAnimationFrame) || requestAnimationFrame).apply(void 0, __spreadArray([], __read(args)));
     },
-    cancelAnimationFrame(...args) {
-        const { delegate } = animationFrameProvider;
-        return ((delegate === null || delegate === void 0 ? void 0 : delegate.cancelAnimationFrame) || cancelAnimationFrame)(...args);
+    cancelAnimationFrame: function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        var delegate = animationFrameProvider.delegate;
+        return ((delegate === null || delegate === void 0 ? void 0 : delegate.cancelAnimationFrame) || cancelAnimationFrame).apply(void 0, __spreadArray([], __read(args)));
     },
     delegate: undefined,
 };

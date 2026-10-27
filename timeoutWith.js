@@ -2,9 +2,9 @@ import { async } from '../scheduler/async';
 import { isValidDate } from '../util/isDate';
 import { timeout } from './timeout';
 export function timeoutWith(due, withObservable, scheduler) {
-    let first;
-    let each;
-    let _with;
+    var first;
+    var each;
+    var _with;
     scheduler = scheduler !== null && scheduler !== void 0 ? scheduler : async;
     if (isValidDate(due)) {
         first = due;
@@ -13,7 +13,7 @@ export function timeoutWith(due, withObservable, scheduler) {
         each = due;
     }
     if (withObservable) {
-        _with = () => withObservable;
+        _with = function () { return withObservable; };
     }
     else {
         throw new TypeError('No observable provided to switch to');
@@ -22,9 +22,9 @@ export function timeoutWith(due, withObservable, scheduler) {
         throw new TypeError('No timeout provided.');
     }
     return timeout({
-        first,
-        each,
-        scheduler,
+        first: first,
+        each: each,
+        scheduler: scheduler,
         with: _with,
     });
 }

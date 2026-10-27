@@ -1,24 +1,7 @@
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AsyncAction = void 0;
-var Action_1 = require("./Action");
-var intervalProvider_1 = require("./intervalProvider");
-var arrRemove_1 = require("../util/arrRemove");
+import { __extends } from "tslib";
+import { Action } from './Action';
+import { intervalProvider } from './intervalProvider';
+import { arrRemove } from '../util/arrRemove';
 var AsyncAction = (function (_super) {
     __extends(AsyncAction, _super);
     function AsyncAction(scheduler, work) {
@@ -47,7 +30,7 @@ var AsyncAction = (function (_super) {
     };
     AsyncAction.prototype.requestAsyncId = function (scheduler, _id, delay) {
         if (delay === void 0) { delay = 0; }
-        return intervalProvider_1.intervalProvider.setInterval(scheduler.flush.bind(scheduler, this), delay);
+        return intervalProvider.setInterval(scheduler.flush.bind(scheduler, this), delay);
     };
     AsyncAction.prototype.recycleAsyncId = function (_scheduler, id, delay) {
         if (delay === void 0) { delay = 0; }
@@ -55,7 +38,7 @@ var AsyncAction = (function (_super) {
             return id;
         }
         if (id != null) {
-            intervalProvider_1.intervalProvider.clearInterval(id);
+            intervalProvider.clearInterval(id);
         }
         return undefined;
     };
@@ -93,7 +76,7 @@ var AsyncAction = (function (_super) {
             var actions = scheduler.actions;
             this.work = this.state = this.scheduler = null;
             this.pending = false;
-            arrRemove_1.arrRemove(actions, this);
+            arrRemove(actions, this);
             if (id != null) {
                 this.id = this.recycleAsyncId(scheduler, id, null);
             }
@@ -102,6 +85,6 @@ var AsyncAction = (function (_super) {
         }
     };
     return AsyncAction;
-}(Action_1.Action));
-exports.AsyncAction = AsyncAction;
+}(Action));
+export { AsyncAction };
 //# sourceMappingURL=AsyncAction.js.map
