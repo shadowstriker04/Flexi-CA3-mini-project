@@ -7,7 +7,9 @@ export function elementAt(index, defaultValue) {
     if (index < 0) {
         throw new ArgumentOutOfRangeError();
     }
-    const hasDefaultValue = arguments.length >= 2;
-    return (source) => source.pipe(filter((v, i) => i === index), take(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(() => new ArgumentOutOfRangeError()));
+    var hasDefaultValue = arguments.length >= 2;
+    return function (source) {
+        return source.pipe(filter(function (v, i) { return i === index; }), take(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(function () { return new ArgumentOutOfRangeError(); }));
+    };
 }
 //# sourceMappingURL=elementAt.js.map

@@ -4,21 +4,23 @@ import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 export function exhaustMap(project, resultSelector) {
     if (resultSelector) {
-        return (source) => source.pipe(exhaustMap((a, i) => innerFrom(project(a, i)).pipe(map((b, ii) => resultSelector(a, b, i, ii)))));
+        return function (source) {
+            return source.pipe(exhaustMap(function (a, i) { return innerFrom(project(a, i)).pipe(map(function (b, ii) { return resultSelector(a, b, i, ii); })); }));
+        };
     }
-    return operate((source, subscriber) => {
-        let index = 0;
-        let innerSub = null;
-        let isComplete = false;
-        source.subscribe(createOperatorSubscriber(subscriber, (outerValue) => {
+    return operate(function (source, subscriber) {
+        var index = 0;
+        var innerSub = null;
+        var isComplete = false;
+        source.subscribe(createOperatorSubscriber(subscriber, function (outerValue) {
             if (!innerSub) {
-                innerSub = createOperatorSubscriber(subscriber, undefined, () => {
+                innerSub = createOperatorSubscriber(subscriber, undefined, function () {
                     innerSub = null;
                     isComplete && subscriber.complete();
                 });
                 innerFrom(project(outerValue, index++)).subscribe(innerSub);
             }
-        }, () => {
+        }, function () {
             isComplete = true;
             !innerSub && subscriber.complete();
         }));

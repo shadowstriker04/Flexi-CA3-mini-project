@@ -1,3 +1,3 @@
 import { exhaustAll } from './exhaustAll';
-export const exhaust = exhaustAll;
+export var exhaust = exhaustAll;
 //# sourceMappingURL=exhaust.js.map

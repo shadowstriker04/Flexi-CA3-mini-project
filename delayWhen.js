@@ -6,8 +6,10 @@ import { mergeMap } from './mergeMap';
 import { innerFrom } from '../observable/innerFrom';
 export function delayWhen(delayDurationSelector, subscriptionDelay) {
     if (subscriptionDelay) {
-        return (source) => concat(subscriptionDelay.pipe(take(1), ignoreElements()), source.pipe(delayWhen(delayDurationSelector)));
+        return function (source) {
+            return concat(subscriptionDelay.pipe(take(1), ignoreElements()), source.pipe(delayWhen(delayDurationSelector)));
+        };
     }
-    return mergeMap((value, index) => innerFrom(delayDurationSelector(value, index)).pipe(take(1), mapTo(value)));
+    return mergeMap(function (value, index) { return innerFrom(delayDurationSelector(value, index)).pipe(take(1), mapTo(value)); });
 }
 //# sourceMappingURL=delayWhen.js.map

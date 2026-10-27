@@ -3,30 +3,30 @@ import { noop } from '../util/noop';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 import { innerFrom } from '../observable/innerFrom';
 export function debounce(durationSelector) {
-    return operate((source, subscriber) => {
-        let hasValue = false;
-        let lastValue = null;
-        let durationSubscriber = null;
-        const emit = () => {
+    return operate(function (source, subscriber) {
+        var hasValue = false;
+        var lastValue = null;
+        var durationSubscriber = null;
+        var emit = function () {
             durationSubscriber === null || durationSubscriber === void 0 ? void 0 : durationSubscriber.unsubscribe();
             durationSubscriber = null;
             if (hasValue) {
                 hasValue = false;
-                const value = lastValue;
+                var value = lastValue;
                 lastValue = null;
                 subscriber.next(value);
             }
         };
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) {
             durationSubscriber === null || durationSubscriber === void 0 ? void 0 : durationSubscriber.unsubscribe();
             hasValue = true;
             lastValue = value;
             durationSubscriber = createOperatorSubscriber(subscriber, emit, noop);
             innerFrom(durationSelector(value)).subscribe(durationSubscriber);
-        }, () => {
+        }, function () {
             emit();
             subscriber.complete();
-        }, undefined, () => {
+        }, undefined, function () {
             lastValue = durationSubscriber = null;
         }));
     });

@@ -1,3 +1,3 @@
 import { mergeMap } from './mergeMap';
-export const flatMap = mergeMap;
+export var flatMap = mergeMap;
 //# sourceMappingURL=flatMap.js.map

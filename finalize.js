@@ -1,6 +1,6 @@
 import { operate } from '../util/lift';
 export function finalize(callback) {
-    return operate((source, subscriber) => {
+    return operate(function (source, subscriber) {
         try {
             source.subscribe(subscriber);
         }

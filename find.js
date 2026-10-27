@@ -4,16 +4,16 @@ export function find(predicate, thisArg) {
     return operate(createFind(predicate, thisArg, 'value'));
 }
 export function createFind(predicate, thisArg, emit) {
-    const findIndex = emit === 'index';
-    return (source, subscriber) => {
-        let index = 0;
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
-            const i = index++;
+    var findIndex = emit === 'index';
+    return function (source, subscriber) {
+        var index = 0;
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) {
+            var i = index++;
             if (predicate.call(thisArg, value, i, source)) {
                 subscriber.next(findIndex ? i : value);
                 subscriber.complete();
             }
-        }, () => {
+        }, function () {
             subscriber.next(findIndex ? -1 : undefined);
             subscriber.complete();
         }));

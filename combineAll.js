@@ -1,3 +1,3 @@
 import { combineLatestAll } from './combineLatestAll';
-export const combineAll = combineLatestAll;
+export var combineAll = combineLatestAll;
 //# sourceMappingURL=combineAll.js.map

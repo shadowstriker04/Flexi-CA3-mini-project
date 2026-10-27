@@ -1,23 +1,24 @@
 import { asyncScheduler } from '../scheduler/async';
 import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
-export function debounceTime(dueTime, scheduler = asyncScheduler) {
-    return operate((source, subscriber) => {
-        let activeTask = null;
-        let lastValue = null;
-        let lastTime = null;
-        const emit = () => {
+export function debounceTime(dueTime, scheduler) {
+    if (scheduler === void 0) { scheduler = asyncScheduler; }
+    return operate(function (source, subscriber) {
+        var activeTask = null;
+        var lastValue = null;
+        var lastTime = null;
+        var emit = function () {
             if (activeTask) {
                 activeTask.unsubscribe();
                 activeTask = null;
-                const value = lastValue;
+                var value = lastValue;
                 lastValue = null;
                 subscriber.next(value);
             }
         };
         function emitWhenIdle() {
-            const targetTime = lastTime + dueTime;
-            const now = scheduler.now();
+            var targetTime = lastTime + dueTime;
+            var now = scheduler.now();
             if (now < targetTime) {
                 activeTask = this.schedule(undefined, targetTime - now);
                 subscriber.add(activeTask);
@@ -25,17 +26,17 @@ export function debounceTime(dueTime, scheduler = asyncScheduler) {
             }
             emit();
         }
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) {
             lastValue = value;
             lastTime = scheduler.now();
             if (!activeTask) {
                 activeTask = scheduler.schedule(emitWhenIdle, dueTime);
                 subscriber.add(activeTask);
             }
-        }, () => {
+        }, function () {
             emit();
             subscriber.complete();
-        }, undefined, () => {
+        }, undefined, function () {
             lastValue = activeTask = null;
         }));
     });
