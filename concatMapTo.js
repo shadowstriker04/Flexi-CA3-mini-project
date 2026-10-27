@@ -1,10 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.concatMapTo = void 0;
-var concatMap_1 = require("./concatMap");
-var isFunction_1 = require("../util/isFunction");
-function concatMapTo(innerObservable, resultSelector) {
-    return isFunction_1.isFunction(resultSelector) ? concatMap_1.concatMap(function () { return innerObservable; }, resultSelector) : concatMap_1.concatMap(function () { return innerObservable; });
+import { concatMap } from './concatMap';
+import { isFunction } from '../util/isFunction';
+export function concatMapTo(innerObservable, resultSelector) {
+    return isFunction(resultSelector) ? concatMap(() => innerObservable, resultSelector) : concatMap(() => innerObservable);
 }
-exports.concatMapTo = concatMapTo;
 //# sourceMappingURL=concatMapTo.js.map

@@ -1,59 +1,56 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.groupBy = void 0;
-var Observable_1 = require("../Observable");
-var innerFrom_1 = require("../observable/innerFrom");
-var Subject_1 = require("../Subject");
-var lift_1 = require("../util/lift");
-var OperatorSubscriber_1 = require("./OperatorSubscriber");
-function groupBy(keySelector, elementOrOptions, duration, connector) {
-    return lift_1.operate(function (source, subscriber) {
-        var element;
+import { Observable } from '../Observable';
+import { innerFrom } from '../observable/innerFrom';
+import { Subject } from '../Subject';
+import { operate } from '../util/lift';
+import { createOperatorSubscriber, OperatorSubscriber } from './OperatorSubscriber';
+export function groupBy(keySelector, elementOrOptions, duration, connector) {
+    return operate((source, subscriber) => {
+        let element;
         if (!elementOrOptions || typeof elementOrOptions === 'function') {
             element = elementOrOptions;
         }
         else {
-            (duration = elementOrOptions.duration, element = elementOrOptions.element, connector = elementOrOptions.connector);
+            ({ duration, element, connector } = elementOrOptions);
         }
-        var groups = new Map();
-        var notify = function (cb) {
+        const groups = new Map();
+        const notify = (cb) => {
             groups.forEach(cb);
             cb(subscriber);
         };
-        var handleError = function (err) { return notify(function (consumer) { return consumer.error(err); }); };
-        var activeGroups = 0;
-        var teardownAttempted = false;
-        var groupBySourceSubscriber = new OperatorSubscriber_1.OperatorSubscriber(subscriber, function (value) {
+        const handleError = (err) => notify((consumer) => consumer.error(err));
+        let activeGroups = 0;
+        let teardownAttempted = false;
+        const groupBySourceSubscriber = new OperatorSubscriber(subscriber, (value) => {
             try {
-                var key_1 = keySelector(value);
-                var group_1 = groups.get(key_1);
-                if (!group_1) {
-                    groups.set(key_1, (group_1 = connector ? connector() : new Subject_1.Subject()));
-                    var grouped = createGroupedObservable(key_1, group_1);
+                const key = keySelector(value);
+                let group = groups.get(key);
+                if (!group) {
+                    groups.set(key, (group = connector ? connector() : new Subject()));
+                    const grouped = createGroupedObservable(key, group);
                     subscriber.next(grouped);
                     if (duration) {
-                        var durationSubscriber_1 = OperatorSubscriber_1.createOperatorSubscriber(group_1, function () {
-                            group_1.complete();
-                            durationSubscriber_1 === null || durationSubscriber_1 === void 0 ? void 0 : durationSubscriber_1.unsubscribe();
-                        }, undefined, undefined, function () { return groups.delete(key_1); });
-                        groupBySourceSubscriber.add(innerFrom_1.innerFrom(duration(grouped)).subscribe(durationSubscriber_1));
+                        const durationSubscriber = createOperatorSubscriber(group, () => {
+                            group.complete();
+                            durationSubscriber === null || durationSubscriber === void 0 ? void 0 : durationSubscriber.unsubscribe();
+                        }, undefined, undefined, () => groups.delete(key));
+                        groupBySourceSubscriber.add(innerFrom(duration(grouped)).subscribe(durationSubscriber));
                     }
                 }
-                group_1.next(element ? element(value) : value);
+                group.next(element ? element(value) : value);
             }
             catch (err) {
                 handleError(err);
             }
-        }, function () { return notify(function (consumer) { return consumer.complete(); }); }, handleError, function () { return groups.clear(); }, function () {
+        }, () => notify((consumer) => consumer.complete()), handleError, () => groups.clear(), () => {
             teardownAttempted = true;
             return activeGroups === 0;
         });
         source.subscribe(groupBySourceSubscriber);
         function createGroupedObservable(key, groupSubject) {
-            var result = new Observable_1.Observable(function (groupSubscriber) {
+            const result = new Observable((groupSubscriber) => {
                 activeGroups++;
-                var innerSub = groupSubject.subscribe(groupSubscriber);
-                return function () {
+                const innerSub = groupSubject.subscribe(groupSubscriber);
+                return () => {
                     innerSub.unsubscribe();
                     --activeGroups === 0 && teardownAttempted && groupBySourceSubscriber.unsubscribe();
                 };
@@ -63,5 +60,4 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
         }
     });
 }
-exports.groupBy = groupBy;
 //# sourceMappingURL=groupBy.js.map

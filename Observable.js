@@ -1,55 +1,50 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Observable = void 0;
-var Subscriber_1 = require("./Subscriber");
-var Subscription_1 = require("./Subscription");
-var observable_1 = require("./symbol/observable");
-var pipe_1 = require("./util/pipe");
-var config_1 = require("./config");
-var isFunction_1 = require("./util/isFunction");
-var errorContext_1 = require("./util/errorContext");
-var Observable = (function () {
-    function Observable(subscribe) {
+import { SafeSubscriber, Subscriber } from './Subscriber';
+import { isSubscription } from './Subscription';
+import { observable as Symbol_observable } from './symbol/observable';
+import { pipeFromArray } from './util/pipe';
+import { config } from './config';
+import { isFunction } from './util/isFunction';
+import { errorContext } from './util/errorContext';
+export class Observable {
+    constructor(subscribe) {
         if (subscribe) {
             this._subscribe = subscribe;
         }
     }
-    Observable.prototype.lift = function (operator) {
-        var observable = new Observable();
+    lift(operator) {
+        const observable = new Observable();
         observable.source = this;
         observable.operator = operator;
         return observable;
-    };
-    Observable.prototype.subscribe = function (observerOrNext, error, complete) {
-        var _this = this;
-        var subscriber = isSubscriber(observerOrNext) ? observerOrNext : new Subscriber_1.SafeSubscriber(observerOrNext, error, complete);
-        errorContext_1.errorContext(function () {
-            var _a = _this, operator = _a.operator, source = _a.source;
+    }
+    subscribe(observerOrNext, error, complete) {
+        const subscriber = isSubscriber(observerOrNext) ? observerOrNext : new SafeSubscriber(observerOrNext, error, complete);
+        errorContext(() => {
+            const { operator, source } = this;
             subscriber.add(operator
                 ?
                     operator.call(subscriber, source)
                 : source
                     ?
-                        _this._subscribe(subscriber)
+                        this._subscribe(subscriber)
                     :
-                        _this._trySubscribe(subscriber));
+                        this._trySubscribe(subscriber));
         });
         return subscriber;
-    };
-    Observable.prototype._trySubscribe = function (sink) {
+    }
+    _trySubscribe(sink) {
         try {
             return this._subscribe(sink);
         }
         catch (err) {
             sink.error(err);
         }
-    };
-    Observable.prototype.forEach = function (next, promiseCtor) {
-        var _this = this;
+    }
+    forEach(next, promiseCtor) {
         promiseCtor = getPromiseCtor(promiseCtor);
-        return new promiseCtor(function (resolve, reject) {
-            var subscriber = new Subscriber_1.SafeSubscriber({
-                next: function (value) {
+        return new promiseCtor((resolve, reject) => {
+            const subscriber = new SafeSubscriber({
+                next: (value) => {
                     try {
                         next(value);
                     }
@@ -61,45 +56,38 @@ var Observable = (function () {
                 error: reject,
                 complete: resolve,
             });
-            _this.subscribe(subscriber);
+            this.subscribe(subscriber);
         });
-    };
-    Observable.prototype._subscribe = function (subscriber) {
+    }
+    _subscribe(subscriber) {
         var _a;
         return (_a = this.source) === null || _a === void 0 ? void 0 : _a.subscribe(subscriber);
-    };
-    Observable.prototype[observable_1.observable] = function () {
+    }
+    [Symbol_observable]() {
         return this;
-    };
-    Observable.prototype.pipe = function () {
-        var operations = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            operations[_i] = arguments[_i];
-        }
-        return pipe_1.pipeFromArray(operations)(this);
-    };
-    Observable.prototype.toPromise = function (promiseCtor) {
-        var _this = this;
+    }
+    pipe(...operations) {
+        return pipeFromArray(operations)(this);
+    }
+    toPromise(promiseCtor) {
         promiseCtor = getPromiseCtor(promiseCtor);
-        return new promiseCtor(function (resolve, reject) {
-            var value;
-            _this.subscribe(function (x) { return (value = x); }, function (err) { return reject(err); }, function () { return resolve(value); });
+        return new promiseCtor((resolve, reject) => {
+            let value;
+            this.subscribe((x) => (value = x), (err) => reject(err), () => resolve(value));
         });
-    };
-    Observable.create = function (subscribe) {
-        return new Observable(subscribe);
-    };
-    return Observable;
-}());
-exports.Observable = Observable;
+    }
+}
+Observable.create = (subscribe) => {
+    return new Observable(subscribe);
+};
 function getPromiseCtor(promiseCtor) {
     var _a;
-    return (_a = promiseCtor !== null && promiseCtor !== void 0 ? promiseCtor : config_1.config.Promise) !== null && _a !== void 0 ? _a : Promise;
+    return (_a = promiseCtor !== null && promiseCtor !== void 0 ? promiseCtor : config.Promise) !== null && _a !== void 0 ? _a : Promise;
 }
 function isObserver(value) {
-    return value && isFunction_1.isFunction(value.next) && isFunction_1.isFunction(value.error) && isFunction_1.isFunction(value.complete);
+    return value && isFunction(value.next) && isFunction(value.error) && isFunction(value.complete);
 }
 function isSubscriber(value) {
-    return (value && value instanceof Subscriber_1.Subscriber) || (isObserver(value) && Subscription_1.isSubscription(value));
+    return (value && value instanceof Subscriber) || (isObserver(value) && isSubscription(value));
 }
 //# sourceMappingURL=Observable.js.map
