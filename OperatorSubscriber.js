@@ -1,13 +1,15 @@
+import { __extends } from "tslib";
 import { Subscriber } from '../Subscriber';
 export function createOperatorSubscriber(destination, onNext, onComplete, onError, onFinalize) {
     return new OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize);
 }
-export class OperatorSubscriber extends Subscriber {
-    constructor(destination, onNext, onComplete, onError, onFinalize, shouldUnsubscribe) {
-        super(destination);
-        this.onFinalize = onFinalize;
-        this.shouldUnsubscribe = shouldUnsubscribe;
-        this._next = onNext
+var OperatorSubscriber = (function (_super) {
+    __extends(OperatorSubscriber, _super);
+    function OperatorSubscriber(destination, onNext, onComplete, onError, onFinalize, shouldUnsubscribe) {
+        var _this = _super.call(this, destination) || this;
+        _this.onFinalize = onFinalize;
+        _this.shouldUnsubscribe = shouldUnsubscribe;
+        _this._next = onNext
             ? function (value) {
                 try {
                     onNext(value);
@@ -16,8 +18,8 @@ export class OperatorSubscriber extends Subscriber {
                     destination.error(err);
                 }
             }
-            : super._next;
-        this._error = onError
+            : _super.prototype._next;
+        _this._error = onError
             ? function (err) {
                 try {
                     onError(err);
@@ -29,8 +31,8 @@ export class OperatorSubscriber extends Subscriber {
                     this.unsubscribe();
                 }
             }
-            : super._error;
-        this._complete = onComplete
+            : _super.prototype._error;
+        _this._complete = onComplete
             ? function () {
                 try {
                     onComplete();
@@ -42,15 +44,18 @@ export class OperatorSubscriber extends Subscriber {
                     this.unsubscribe();
                 }
             }
-            : super._complete;
+            : _super.prototype._complete;
+        return _this;
     }
-    unsubscribe() {
+    OperatorSubscriber.prototype.unsubscribe = function () {
         var _a;
         if (!this.shouldUnsubscribe || this.shouldUnsubscribe()) {
-            const { closed } = this;
-            super.unsubscribe();
-            !closed && ((_a = this.onFinalize) === null || _a === void 0 ? void 0 : _a.call(this));
+            var closed_1 = this.closed;
+            _super.prototype.unsubscribe.call(this);
+            !closed_1 && ((_a = this.onFinalize) === null || _a === void 0 ? void 0 : _a.call(this));
         }
-    }
-}
+    };
+    return OperatorSubscriber;
+}(Subscriber));
+export { OperatorSubscriber };
 //# sourceMappingURL=OperatorSubscriber.js.map

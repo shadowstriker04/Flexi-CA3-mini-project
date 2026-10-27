@@ -3,8 +3,9 @@ import { createOperatorSubscriber } from './OperatorSubscriber';
 import { identity } from '../util/identity';
 import { timer } from '../observable/timer';
 import { innerFrom } from '../observable/innerFrom';
-export function retry(configOrCount = Infinity) {
-    let config;
+export function retry(configOrCount) {
+    if (configOrCount === void 0) { configOrCount = Infinity; }
+    var config;
     if (configOrCount && typeof configOrCount === 'object') {
         config = configOrCount;
     }
@@ -13,22 +14,22 @@ export function retry(configOrCount = Infinity) {
             count: configOrCount,
         };
     }
-    const { count = Infinity, delay, resetOnSuccess: resetOnSuccess = false } = config;
+    var _a = config.count, count = _a === void 0 ? Infinity : _a, delay = config.delay, _b = config.resetOnSuccess, resetOnSuccess = _b === void 0 ? false : _b;
     return count <= 0
         ? identity
-        : operate((source, subscriber) => {
-            let soFar = 0;
-            let innerSub;
-            const subscribeForRetry = () => {
-                let syncUnsub = false;
-                innerSub = source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+        : operate(function (source, subscriber) {
+            var soFar = 0;
+            var innerSub;
+            var subscribeForRetry = function () {
+                var syncUnsub = false;
+                innerSub = source.subscribe(createOperatorSubscriber(subscriber, function (value) {
                     if (resetOnSuccess) {
                         soFar = 0;
                     }
                     subscriber.next(value);
-                }, undefined, (err) => {
+                }, undefined, function (err) {
                     if (soFar++ < count) {
-                        const resub = () => {
+                        var resub_1 = function () {
                             if (innerSub) {
                                 innerSub.unsubscribe();
                                 innerSub = null;
@@ -39,17 +40,17 @@ export function retry(configOrCount = Infinity) {
                             }
                         };
                         if (delay != null) {
-                            const notifier = typeof delay === 'number' ? timer(delay) : innerFrom(delay(err, soFar));
-                            const notifierSubscriber = createOperatorSubscriber(subscriber, () => {
-                                notifierSubscriber.unsubscribe();
-                                resub();
-                            }, () => {
+                            var notifier = typeof delay === 'number' ? timer(delay) : innerFrom(delay(err, soFar));
+                            var notifierSubscriber_1 = createOperatorSubscriber(subscriber, function () {
+                                notifierSubscriber_1.unsubscribe();
+                                resub_1();
+                            }, function () {
                                 subscriber.complete();
                             });
-                            notifier.subscribe(notifierSubscriber);
+                            notifier.subscribe(notifierSubscriber_1);
                         }
                         else {
-                            resub();
+                            resub_1();
                         }
                     }
                     else {

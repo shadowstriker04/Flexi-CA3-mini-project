@@ -1,9 +1,9 @@
 import { BehaviorSubject } from '../BehaviorSubject';
 import { ConnectableObservable } from '../observable/ConnectableObservable';
 export function publishBehavior(initialValue) {
-    return (source) => {
-        const subject = new BehaviorSubject(initialValue);
-        return new ConnectableObservable(source, () => subject);
+    return function (source) {
+        var subject = new BehaviorSubject(initialValue);
+        return new ConnectableObservable(source, function () { return subject; });
     };
 }
 //# sourceMappingURL=publishBehavior.js.map

@@ -4,10 +4,10 @@ import { createOperatorSubscriber } from './OperatorSubscriber';
 export function take(count) {
     return count <= 0
         ?
-            () => EMPTY
-        : operate((source, subscriber) => {
-            let seen = 0;
-            source.subscribe(createOperatorSubscriber(subscriber, (value) => {
+            function () { return EMPTY; }
+        : operate(function (source, subscriber) {
+            var seen = 0;
+            source.subscribe(createOperatorSubscriber(subscriber, function (value) {
                 if (++seen <= count) {
                     subscriber.next(value);
                     if (count <= seen) {

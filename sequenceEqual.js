@@ -1,26 +1,27 @@
 import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 import { innerFrom } from '../observable/innerFrom';
-export function sequenceEqual(compareTo, comparator = (a, b) => a === b) {
-    return operate((source, subscriber) => {
-        const aState = createState();
-        const bState = createState();
-        const emit = (isEqual) => {
+export function sequenceEqual(compareTo, comparator) {
+    if (comparator === void 0) { comparator = function (a, b) { return a === b; }; }
+    return operate(function (source, subscriber) {
+        var aState = createState();
+        var bState = createState();
+        var emit = function (isEqual) {
             subscriber.next(isEqual);
             subscriber.complete();
         };
-        const createSubscriber = (selfState, otherState) => {
-            const sequenceEqualSubscriber = createOperatorSubscriber(subscriber, (a) => {
-                const { buffer, complete } = otherState;
+        var createSubscriber = function (selfState, otherState) {
+            var sequenceEqualSubscriber = createOperatorSubscriber(subscriber, function (a) {
+                var buffer = otherState.buffer, complete = otherState.complete;
                 if (buffer.length === 0) {
                     complete ? emit(false) : selfState.buffer.push(a);
                 }
                 else {
                     !comparator(a, buffer.shift()) && emit(false);
                 }
-            }, () => {
+            }, function () {
                 selfState.complete = true;
-                const { complete, buffer } = otherState;
+                var complete = otherState.complete, buffer = otherState.buffer;
                 complete && emit(buffer.length === 0);
                 sequenceEqualSubscriber === null || sequenceEqualSubscriber === void 0 ? void 0 : sequenceEqualSubscriber.unsubscribe();
             });

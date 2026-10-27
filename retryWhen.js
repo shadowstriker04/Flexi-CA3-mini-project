@@ -3,15 +3,17 @@ import { Subject } from '../Subject';
 import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 export function retryWhen(notifier) {
-    return operate((source, subscriber) => {
-        let innerSub;
-        let syncResub = false;
-        let errors$;
-        const subscribeForRetryWhen = () => {
-            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, undefined, (err) => {
+    return operate(function (source, subscriber) {
+        var innerSub;
+        var syncResub = false;
+        var errors$;
+        var subscribeForRetryWhen = function () {
+            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, undefined, function (err) {
                 if (!errors$) {
                     errors$ = new Subject();
-                    innerFrom(notifier(errors$)).subscribe(createOperatorSubscriber(subscriber, () => innerSub ? subscribeForRetryWhen() : (syncResub = true)));
+                    innerFrom(notifier(errors$)).subscribe(createOperatorSubscriber(subscriber, function () {
+                        return innerSub ? subscribeForRetryWhen() : (syncResub = true);
+                    }));
                 }
                 if (errors$) {
                     errors$.next(err);

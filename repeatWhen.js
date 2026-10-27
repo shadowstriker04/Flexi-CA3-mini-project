@@ -3,33 +3,33 @@ import { Subject } from '../Subject';
 import { operate } from '../util/lift';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 export function repeatWhen(notifier) {
-    return operate((source, subscriber) => {
-        let innerSub;
-        let syncResub = false;
-        let completions$;
-        let isNotifierComplete = false;
-        let isMainComplete = false;
-        const checkComplete = () => isMainComplete && isNotifierComplete && (subscriber.complete(), true);
-        const getCompletionSubject = () => {
+    return operate(function (source, subscriber) {
+        var innerSub;
+        var syncResub = false;
+        var completions$;
+        var isNotifierComplete = false;
+        var isMainComplete = false;
+        var checkComplete = function () { return isMainComplete && isNotifierComplete && (subscriber.complete(), true); };
+        var getCompletionSubject = function () {
             if (!completions$) {
                 completions$ = new Subject();
-                innerFrom(notifier(completions$)).subscribe(createOperatorSubscriber(subscriber, () => {
+                innerFrom(notifier(completions$)).subscribe(createOperatorSubscriber(subscriber, function () {
                     if (innerSub) {
                         subscribeForRepeatWhen();
                     }
                     else {
                         syncResub = true;
                     }
-                }, () => {
+                }, function () {
                     isNotifierComplete = true;
                     checkComplete();
                 }));
             }
             return completions$;
         };
-        const subscribeForRepeatWhen = () => {
+        var subscribeForRepeatWhen = function () {
             isMainComplete = false;
-            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, () => {
+            innerSub = source.subscribe(createOperatorSubscriber(subscriber, undefined, function () {
                 isMainComplete = true;
                 !checkComplete() && getCompletionSubject().next();
             }));

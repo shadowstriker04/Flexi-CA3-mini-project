@@ -1,11 +1,11 @@
 import { createOperatorSubscriber } from './OperatorSubscriber';
 export function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplete) {
-    return (source, subscriber) => {
-        let hasState = hasSeed;
-        let state = seed;
-        let index = 0;
-        source.subscribe(createOperatorSubscriber(subscriber, (value) => {
-            const i = index++;
+    return function (source, subscriber) {
+        var hasState = hasSeed;
+        var state = seed;
+        var index = 0;
+        source.subscribe(createOperatorSubscriber(subscriber, function (value) {
+            var i = index++;
             state = hasState
                 ?
                     accumulator(state, value, i)
@@ -13,7 +13,7 @@ export function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBefore
                     ((hasState = true), value);
             emitOnNext && subscriber.next(state);
         }, emitBeforeComplete &&
-            (() => {
+            (function () {
                 hasState && subscriber.next(state);
                 subscriber.complete();
             })));

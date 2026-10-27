@@ -5,22 +5,22 @@ export function skipLast(skipCount) {
     return skipCount <= 0
         ?
             identity
-        : operate((source, subscriber) => {
-            let ring = new Array(skipCount);
-            let seen = 0;
-            source.subscribe(createOperatorSubscriber(subscriber, (value) => {
-                const valueIndex = seen++;
+        : operate(function (source, subscriber) {
+            var ring = new Array(skipCount);
+            var seen = 0;
+            source.subscribe(createOperatorSubscriber(subscriber, function (value) {
+                var valueIndex = seen++;
                 if (valueIndex < skipCount) {
                     ring[valueIndex] = value;
                 }
                 else {
-                    const index = valueIndex % skipCount;
-                    const oldValue = ring[index];
+                    var index = valueIndex % skipCount;
+                    var oldValue = ring[index];
                     ring[index] = value;
                     subscriber.next(oldValue);
                 }
             }));
-            return () => {
+            return function () {
                 ring = null;
             };
         });

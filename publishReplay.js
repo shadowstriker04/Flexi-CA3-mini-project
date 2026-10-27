@@ -5,7 +5,7 @@ export function publishReplay(bufferSize, windowTime, selectorOrScheduler, times
     if (selectorOrScheduler && !isFunction(selectorOrScheduler)) {
         timestampProvider = selectorOrScheduler;
     }
-    const selector = isFunction(selectorOrScheduler) ? selectorOrScheduler : undefined;
-    return (source) => multicast(new ReplaySubject(bufferSize, windowTime, timestampProvider), selector)(source);
+    var selector = isFunction(selectorOrScheduler) ? selectorOrScheduler : undefined;
+    return function (source) { return multicast(new ReplaySubject(bufferSize, windowTime, timestampProvider), selector)(source); };
 }
 //# sourceMappingURL=publishReplay.js.map

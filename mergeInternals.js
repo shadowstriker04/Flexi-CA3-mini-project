@@ -2,21 +2,21 @@ import { innerFrom } from '../observable/innerFrom';
 import { executeSchedule } from '../util/executeSchedule';
 import { createOperatorSubscriber } from './OperatorSubscriber';
 export function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, expand, innerSubScheduler, additionalFinalizer) {
-    const buffer = [];
-    let active = 0;
-    let index = 0;
-    let isComplete = false;
-    const checkComplete = () => {
+    var buffer = [];
+    var active = 0;
+    var index = 0;
+    var isComplete = false;
+    var checkComplete = function () {
         if (isComplete && !buffer.length && !active) {
             subscriber.complete();
         }
     };
-    const outerNext = (value) => (active < concurrent ? doInnerSub(value) : buffer.push(value));
-    const doInnerSub = (value) => {
+    var outerNext = function (value) { return (active < concurrent ? doInnerSub(value) : buffer.push(value)); };
+    var doInnerSub = function (value) {
         expand && subscriber.next(value);
         active++;
-        let innerComplete = false;
-        innerFrom(project(value, index++)).subscribe(createOperatorSubscriber(subscriber, (innerValue) => {
+        var innerComplete = false;
+        innerFrom(project(value, index++)).subscribe(createOperatorSubscriber(subscriber, function (innerValue) {
             onBeforeNext === null || onBeforeNext === void 0 ? void 0 : onBeforeNext(innerValue);
             if (expand) {
                 outerNext(innerValue);
@@ -24,20 +24,23 @@ export function mergeInternals(source, subscriber, project, concurrent, onBefore
             else {
                 subscriber.next(innerValue);
             }
-        }, () => {
+        }, function () {
             innerComplete = true;
-        }, undefined, () => {
+        }, undefined, function () {
             if (innerComplete) {
                 try {
                     active--;
-                    while (buffer.length && active < concurrent) {
-                        const bufferedValue = buffer.shift();
+                    var _loop_1 = function () {
+                        var bufferedValue = buffer.shift();
                         if (innerSubScheduler) {
-                            executeSchedule(subscriber, innerSubScheduler, () => doInnerSub(bufferedValue));
+                            executeSchedule(subscriber, innerSubScheduler, function () { return doInnerSub(bufferedValue); });
                         }
                         else {
                             doInnerSub(bufferedValue);
                         }
+                    };
+                    while (buffer.length && active < concurrent) {
+                        _loop_1();
                     }
                     checkComplete();
                 }
@@ -47,11 +50,11 @@ export function mergeInternals(source, subscriber, project, concurrent, onBefore
             }
         }));
     };
-    source.subscribe(createOperatorSubscriber(subscriber, outerNext, () => {
+    source.subscribe(createOperatorSubscriber(subscriber, outerNext, function () {
         isComplete = true;
         checkComplete();
     }));
-    return () => {
+    return function () {
         additionalFinalizer === null || additionalFinalizer === void 0 ? void 0 : additionalFinalizer();
     };
 }
