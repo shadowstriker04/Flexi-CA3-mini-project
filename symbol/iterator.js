@@ -4,5 +4,5 @@ export function getSymbolIterator() {
     }
     return Symbol.iterator;
 }
-export const iterator = getSymbolIterator();
+export var iterator = getSymbolIterator();
 //# sourceMappingURL=iterator.js.map
